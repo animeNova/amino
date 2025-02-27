@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter,  } from "next/font/google";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+import Header from "@/components/header/header";
+import { ThemeProvider } from "@/components/theme/theme-provider"
+import MobileNav from "@/components/header/mobile-nav";
+import LoginDialog from "@/components/dialogs/auth/login-dialog";
+import { Toaster } from "@/components/ui/sonner"
+const geistInter = Inter({
+    subsets : ['latin'] ,
+    weight : ['400','500','900']
 });
 
 export const metadata: Metadata = {
@@ -23,11 +22,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistInter.className}  antialiased`}
       >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <Toaster />
+        <Header />
+        <MobileNav />
+        <LoginDialog />
         {children}
+        </ThemeProvider>
       </body>
     </html>
   );
