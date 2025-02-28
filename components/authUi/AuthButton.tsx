@@ -9,7 +9,7 @@ const AuthButtons = () => {
 
   return (
     <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-    <Button className="flex" onClick={openLogin}>Join Now</Button>
+    <Button  onClick={openLogin}>Join Now</Button>
   </div>
   )
 }

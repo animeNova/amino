@@ -1,10 +1,9 @@
 import Link from 'next/link'
 import React from 'react'
-import { ModeToggle } from '../theme/theme'
 import AuthUi from '@/components/authUi'
 const Header = () => {
   return (
-    <header className="static top-0 z-50 w-full border border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="fixed top-0 z-50 w-full border border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
     <div className="flex h-14 items-center justify-between mx-6">
       <div className="ml-6 flex">
         <Link className="mr-6 flex items-center space-x-2" href="/">
@@ -21,7 +20,7 @@ const Header = () => {
       </div>
       <div className="flex items-center justify-center space-x-2 ">
         <AuthUi/>
-        <ModeToggle />
+        {/* <ModeToggle /> */}
       </div>
     </div>
   </header>

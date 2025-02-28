@@ -132,7 +132,7 @@ const LoginDialog = () => {
                       )}
                     />
             <Button
-                  className="w-full bg-white/10 hover:bg-white/15 !text-white font-medium rounded-xl h-12 transition-all hover:scale-[1.02]"
+                  className="w-full bg-primary/70 hover:bg-primary/60 backdrop:backdrop-blur-sm !text-white font-medium rounded-xl h-12 transition-all hover:scale-[1.02]"
                   variant="ghost"
                   type='submit'
                 >

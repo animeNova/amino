@@ -11,12 +11,12 @@ const Hero = () => {
     <section 
     className=" space-y-6 py-8 md:py-12 lg:py-32 relative overflow-hidden w-full h-full">
     <div className="absolute inset-0 overflow-hidden w-full h-full">
-      <div className="absolute w-full h-full ">
+      <div className="absolute w-full h-full">
           <Aurora
            colorStops={["#f3f", "#f7f", "#FF3232"]}
-           blend={0.5}
+           blend={1}
            amplitude={1.0}
-           speed={0.5}
+           speed={0.6}
           />
       </div>
     </div>
