@@ -1,10 +1,11 @@
 import Link from 'next/link'
 import React from 'react'
 import AuthUi from '@/components/authUi'
+import MobileNav from './mobile-nav'
 const Header = () => {
   return (
-    <header className="fixed top-0 z-50 w-full border border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-    <div className="flex h-14 items-center justify-between mx-6">
+    <header className="fixed top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+    <div className="flex h-14 items-center justify-between md:mx-6">
       <div className="ml-6 flex">
         <Link className="mr-6 flex items-center space-x-2" href="/">
           <span className="font-bold text-xl">Amino</span>
@@ -18,8 +19,9 @@ const Header = () => {
           </Link>
         </nav>
       </div>
-      <div className="flex items-center justify-center space-x-2 ">
+      <div className="flex items-center justify-center gap-2">
         <AuthUi/>
+        <MobileNav />
         {/* <ModeToggle /> */}
       </div>
     </div>

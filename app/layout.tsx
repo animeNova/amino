@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme/theme-provider"
 import MobileNav from "@/components/header/mobile-nav";
 import LoginDialog from "@/components/dialogs/auth/login-dialog";
 import { Toaster } from "@/components/ui/sonner"
+import Aurora from "@/components/ui/Aurora";
 const geistInter = Inter({
     subsets : ['latin'] ,
     weight : ['400','500','900']
@@ -34,7 +35,6 @@ export default function RootLayout({
         >
           <Toaster />
         <Header />
-        <MobileNav />
         <LoginDialog />
         {children}
         </ThemeProvider>
