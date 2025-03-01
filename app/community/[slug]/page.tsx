@@ -10,11 +10,12 @@ import { CommunityInfo } from "@/components/community/community-info"
 import { CommunityRules } from "@/components/community/community-rules"
 import { PinnedPosts } from "@/components/community/pinned-posts"
 import AnimePostCard from "@/components/ui/posts/post"
-
+import Container from "@/components/ui/container"
 export default function CommunityPage() {
   return (
     <div className="min-h-screen bg-background">
-      <div className="container relative mt-36 grid grid-cols-1 gap-6 pb-8 md:grid-cols-12">
+     <Container>
+      <div className="container relative grid grid-cols-1 gap-6 pb-8 md:grid-cols-12">
         {/* Left Sidebar - Community Info */}
         <div className="md:col-span-3 space-y-6">
           <CommunityInfo community={communityData} />
@@ -68,6 +69,7 @@ export default function CommunityPage() {
           <PinnedPosts posts={pinnedPosts} />
         </div>
       </div>
+      </Container>
     </div>
   )
 }

@@ -6,13 +6,14 @@ import { Separator } from "@/components/ui/separator"
 import ShareButtons from "./share-buttons"
 import RelatedPosts from "./related-posts"
 import CommentSection from "./comment-section"
+import Container from "@/components/ui/container"
 
 
 export default function PostPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation Bar */}
-      {/* <nav className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="sticky top-12 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 max-w-screen-2xl items-center">
           <Button variant="ghost" size="sm" className="mr-auto">
             <ChevronLeft className="mr-2 h-4 w-4" />
@@ -29,8 +30,8 @@ export default function PostPage() {
             </Button>
           </div>
         </div>
-      </nav> */}
-
+      </nav>
+    <Container>
       <main className="container max-w-4xl py-6 lg:py-10">
         {/* Post Header */}
         <div className="space-y-6">
@@ -80,7 +81,7 @@ export default function PostPage() {
           {/* Featured Image */}
           <div className="relative aspect-video overflow-hidden rounded-lg border">
             <img
-              src="/placeholder.svg?height=600&width=1200"
+              src="https://thumbs.dreamstime.com/b/anime-boy-aesthetic-image-wallpaper-cute-cartoon-anime-wallpaper-342273503.jpg"
               alt="Evolution of Anime"
               className="object-cover w-full"
             />
@@ -129,8 +130,8 @@ export default function PostPage() {
             </p>
 
             <div className="grid grid-cols-2 gap-4 my-8">
-              <img src="/placeholder.svg?height=300&width=400" alt="Classic anime scene" className="rounded-lg" />
-              <img src="/placeholder.svg?height=300&width=400" alt="Modern anime scene" className="rounded-lg" />
+              <img src="https://thumbs.dreamstime.com/b/anime-boy-aesthetic-image-wallpaper-cute-cartoon-anime-wallpaper-342273503.jpg" alt="Classic anime scene" className="rounded-lg" />
+              <img src="https://thumbs.dreamstime.com/b/anime-boy-aesthetic-image-wallpaper-cute-cartoon-anime-wallpaper-342273503.jpg" alt="Modern anime scene" className="rounded-lg" />
             </div>
 
             <h2>The Future of Anime</h2>
@@ -178,19 +179,11 @@ export default function PostPage() {
           {/* Related Posts */}
           <RelatedPosts />
 
-          {/* Navigation Between Posts */}
-          <div className="flex items-center justify-between mt-8 pt-8 border-t">
-            <Button variant="ghost" className="gap-2">
-              <ChevronLeft className="h-4 w-4" />
-              Previous Post
-            </Button>
-            <Button variant="ghost" className="gap-2">
-              Next Post
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+  
+       
         </div>
       </main>
+      </Container>
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import AnimePostCard from "@/components/ui/posts/post"
 
 const relatedPosts = [
   {
@@ -30,30 +31,27 @@ export default function RelatedPosts() {
   return (
     <section className="space-y-6">
       <h2 className="text-2xl font-bold">Related Posts</h2>
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2">
         {relatedPosts.map((post) => (
-          <Link key={post.id} href={`/posts/${post.id}`}>
-            <Card className="h-full hover:shadow-lg transition-shadow">
-              <CardHeader className="p-0">
-                <img
-                  src={post.image || "/placeholder.svg"}
-                  alt={post.title}
-                  className="w-full h-40 object-cover rounded-t-lg"
-                />
-              </CardHeader>
-              <CardContent className="p-4 space-y-2">
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {post.genres.map((genre) => (
-                    <Badge key={genre} variant="secondary" className="text-xs">
-                      {genre}
-                    </Badge>
-                  ))}
-                </div>
-                <h3 className="font-semibold line-clamp-2">{post.title}</h3>
-                <p className="text-sm text-muted-foreground line-clamp-2">{post.excerpt}</p>
-              </CardContent>
-            </Card>
-          </Link>
+                    <AnimePostCard key={post.id} 
+                                author={{
+                                    name: "SakuraChan",
+                                    avatar: "/placeholder.svg?height=40&width=40",
+                                    level: 42,
+                                  }}
+                                  post={{
+                                    title: "Why Chainsaw Man is a Masterpiece!",
+                                    excerpt:
+                                      "Just finished binge-watching Chainsaw Man and I need to share my thoughts! The animation quality and story development are absolutely incredible. MAPPA has outdone themselves with the fight scenes...",
+                                    publishDate: "2 hours ago",
+                                  }}
+                                  genres={["Shounen", "Action", "Supernatural"]}
+                                  stats={{
+                                    likes: 124,
+                                    comments: 32,
+                                    shares: 8,
+                                  }}
+                                />
         ))}
       </div>
     </section>
