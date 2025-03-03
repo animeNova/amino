@@ -15,7 +15,7 @@ const index = () => {
       <div>
         {
           data?.user ? (
-            <UserButton id={data.user.id} name={data.user.name} image={data.user.image} /> 
+            <UserButton id={data.user.id} name={data.user.name} image={data.user.image} role={data.user.role} /> 
           ) : 
           (
               <AuthButtons />

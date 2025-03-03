@@ -10,19 +10,24 @@ import {
 } from "@/components/ui/dropdown-menu";
 import Image from 'next/image';
 import { LogOutIcon, Settings, User } from 'lucide-react';
+import { LuLayoutDashboard } from "react-icons/lu";
+
 import { signOut } from '@/lib/auth/clinet';
+import { useRouter } from 'next/navigation';
 interface UserButtonProps {
     id : string;
     name : string;
     image ?:string | null;
+    role : string | null | undefined;
 }
  
 const UserButton : React.FC<UserButtonProps> = ({
     id,
     name,
-    image
+    image,
+    role
 }) => {
-  
+  const router = useRouter()
   return (
     <DropdownMenu>
        <DropdownMenuTrigger>
@@ -33,10 +38,19 @@ const UserButton : React.FC<UserButtonProps> = ({
        <DropdownMenuContent>
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => router.push(`/profile/${id}`)}>
           <User />
           Profile
+        </DropdownMenuItem>
+        {
+          role != 'user' && (
+          <DropdownMenuItem>
+            <LuLayoutDashboard />
+            Dashboard
           </DropdownMenuItem>
+          )
+        }
+    
         <DropdownMenuItem>
           <Settings className='hover:rotate-[30deg] transition-transform' />
           Setting
