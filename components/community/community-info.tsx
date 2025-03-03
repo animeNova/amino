@@ -1,9 +1,10 @@
+'use client';
 import { Bell, MoreHorizontal, Share2, Users, MessageCircle } from "lucide-react"
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { useSession } from "@/lib/auth/clinet";
 
 interface CommunityInfoProps {
   community: {
@@ -21,6 +22,7 @@ interface CommunityInfoProps {
 }
 
 export function CommunityInfo({ community }: CommunityInfoProps) {
+  const {data} = useSession()
   return (
     <Card>
       <CardHeader className="relative pb-0">
@@ -46,8 +48,16 @@ export function CommunityInfo({ community }: CommunityInfoProps) {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button className="flex-1">Join Community</Button>
-          <Button variant="outline" size="icon">
+          {
+            data?.user ? (
+              <Button className="flex-1" >Create Post</Button>
+
+            ) : (
+              <Button className="flex-1">Join Community</Button>
+
+            )
+          }
+            <Button variant="outline" size="icon">
             <Bell className="h-4 w-4" />
           </Button>
           <Button variant="outline" size="icon">
