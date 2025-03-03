@@ -6,14 +6,16 @@ import { Users, Star, Trophy, Settings, Sparkles, Calendar } from "lucide-react"
 import UserPosts from "./user-posts"
 import FavoritesList from "./favorites-list"
 import AchievementsList from "./achievements-list"
+import Container from "@/components/ui/container"
 
 export default function ProfilePage() {
   return (
-    <div className="min-h-screen bg-background">
+  
+    <div className="min-h-screen bg-background mt-16">
       {/* Cover Image */}
-      <div className="h-48 md:h-64 bg-gradient-to-r from-primary/20 to-primary/40 relative">
+      <div className="h-48 md:h-64 bg-gradient-to-r from-primary/20 to-primary/40 relative rounded-md">
         <img
-          src="/placeholder.svg?height=400&width=1200"
+          src="https://thumbs.dreamstime.com/b/anime-boy-aesthetic-image-wallpaper-cute-cartoon-anime-wallpaper-342273503.jpg"
           alt="Profile cover"
           className="w-full h-full object-cover opacity-50"
         />
@@ -26,7 +28,7 @@ export default function ProfilePage() {
             {/* Avatar */}
             <div className="relative z-20">
               <Avatar className="w-32 h-32 border-4 border-background shadow-xl">
-                <AvatarImage src="/placeholder.svg?height=128&width=128" alt="SakuraChan" />
+                <AvatarImage src="https://thumbs.dreamstime.com/b/anime-boy-aesthetic-image-wallpaper-cute-cartoon-anime-wallpaper-342273503.jpg" alt="SakuraChan" className="object-cover" />
                 <AvatarFallback>SC</AvatarFallback>
               </Avatar>
               <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-2 py-0.5 rounded-md font-bold text-sm">
@@ -131,6 +133,7 @@ export default function ProfilePage() {
         </Tabs>
       </div>
     </div>
+
   )
 }
 

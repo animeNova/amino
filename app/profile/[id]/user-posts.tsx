@@ -2,6 +2,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Heart, MessageCircle, Share2, Bookmark } from "lucide-react"
+import AnimePostCard from "@/components/ui/posts/post"
 
 const posts = [
   {
@@ -36,47 +37,27 @@ const posts = [
 
 export default function UserPosts() {
   return (
-    <div className="space-y-6">
+    <div className="flex justify-center items-center gap-3 flex-wrap">
       {posts.map((post) => (
-        <Card key={post.id} className="overflow-hidden">
-          <CardHeader className="space-y-4">
-            <div className="flex items-center gap-2">
-              {post.genres.map((genre) => (
-                <Badge key={genre} variant="secondary" className="rounded-full font-medium bg-primary/10">
-                  {genre}
-                </Badge>
-              ))}
-            </div>
-            <h3 className="text-xl font-bold">{post.title}</h3>
-          </CardHeader>
-          {post.image && (
-            <div className="relative aspect-video">
-              <img src={post.image || "/placeholder.svg"} alt={post.title} className="w-full h-full object-cover" />
-            </div>
-          )}
-          <CardContent className="pt-4">
-            <p className="text-muted-foreground">{post.content}</p>
-          </CardContent>
-          <CardFooter className="border-t flex justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" className="gap-1">
-                <Heart className="h-4 w-4" />
-                <span className="text-xs">{post.stats.likes}</span>
-              </Button>
-              <Button variant="ghost" size="sm" className="gap-1">
-                <MessageCircle className="h-4 w-4" />
-                <span className="text-xs">{post.stats.comments}</span>
-              </Button>
-              <Button variant="ghost" size="sm" className="gap-1">
-                <Share2 className="h-4 w-4" />
-                <span className="text-xs">{post.stats.shares}</span>
-              </Button>
-            </div>
-            <Button variant="ghost" size="sm">
-              <Bookmark className="h-4 w-4" />
-            </Button>
-          </CardFooter>
-        </Card>
+            <AnimePostCard key={post.id} 
+                       author={{
+                           name: "SakuraChan",
+                           avatar: "/placeholder.svg?height=40&width=40",
+                           level: 42,
+                         }}
+                         post={{
+                           title: "Why Chainsaw Man is a Masterpiece!",
+                           excerpt:
+                             "Just finished binge-watching Chainsaw Man and I need to share my thoughts! The animation quality and story development are absolutely incredible. MAPPA has outdone themselves with the fight scenes...",
+                           publishDate: "2 hours ago",
+                         }}
+                         genres={["Shounen", "Action", "Supernatural"]}
+                         stats={{
+                           likes: 124,
+                           comments: 32,
+                           shares: 8,
+                         }}
+                       />
       ))}
     </div>
   )
