@@ -7,7 +7,7 @@ const favorites = {
     {
       id: 1,
       title: "Fullmetal Alchemist: Brotherhood",
-      image: "/placeholder.svg?height=200&width=150",
+      image: "https://thumbs.dreamstime.com/b/captivating-anime-inspired-character-vintage-poster-style-vibrant-magenta-cyan-hues-ai-generated-322132967.jpg?w=992",
       rating: 10,
       type: "TV",
       episodes: 64,
@@ -15,7 +15,7 @@ const favorites = {
     {
       id: 2,
       title: "Attack on Titan",
-      image: "/placeholder.svg?height=200&width=150",
+      image: "https://thumbs.dreamstime.com/b/captivating-anime-inspired-character-vintage-poster-style-vibrant-magenta-cyan-hues-ai-generated-322132967.jpg?w=992",
       rating: 9.5,
       type: "TV",
       episodes: 87,
@@ -23,7 +23,7 @@ const favorites = {
     {
       id: 3,
       title: "Demon Slayer",
-      image: "/placeholder.svg?height=200&width=150",
+      image: "https://thumbs.dreamstime.com/b/captivating-anime-inspired-character-vintage-poster-style-vibrant-magenta-cyan-hues-ai-generated-322132967.jpg?w=992",
       rating: 9,
       type: "TV",
       episodes: 44,
@@ -33,7 +33,7 @@ const favorites = {
     {
       id: 1,
       title: "Berserk",
-      image: "/placeholder.svg?height=200&width=150",
+      image: "https://thumbs.dreamstime.com/b/captivating-anime-inspired-character-vintage-poster-style-vibrant-magenta-cyan-hues-ai-generated-322132967.jpg?w=992",
       rating: 10,
       type: "Manga",
       volumes: 41,
@@ -41,7 +41,7 @@ const favorites = {
     {
       id: 2,
       title: "Chainsaw Man",
-      image: "/placeholder.svg?height=200&width=150",
+      image: "https://thumbs.dreamstime.com/b/captivating-anime-inspired-character-vintage-poster-style-vibrant-magenta-cyan-hues-ai-generated-322132967.jpg?w=992",
       rating: 9,
       type: "Manga",
       volumes: 14,
