@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useSession } from "@/lib/auth/clinet";
+import { CreatePostDialog } from "./create-post";
 
 interface CommunityInfoProps {
   community: {
@@ -50,7 +51,7 @@ export function CommunityInfo({ community }: CommunityInfoProps) {
         <div className="flex gap-2">
           {
             data?.user ? (
-              <Button className="flex-1" >Create Post</Button>
+              <CreatePostDialog />
 
             ) : (
               <Button className="flex-1">Join Community</Button>
