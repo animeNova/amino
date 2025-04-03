@@ -5,10 +5,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Sparkles } from "lucide-react"
+import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Sparkles, Eye } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
+import { motion } from "framer-motion"
 
 interface AnimePostCardProps {
   author: {
@@ -42,7 +43,8 @@ export default function AnimePostCard({
     title: "Why Chainsaw Man is a Masterpiece!",
     excerpt:
       "Just finished binge-watching Chainsaw Man and I need to share my thoughts! The animation quality and story development are absolutely incredible...",
-    images: 'https://thumbs.dreamstime.com/b/anime-boy-aesthetic-image-wallpaper-cute-cartoon-anime-wallpaper-342273503.jpg',
+    images:
+      "https://thumbs.dreamstime.com/b/anime-boy-aesthetic-image-wallpaper-cute-cartoon-anime-wallpaper-342273503.jpg",
     publishDate: "2 hours ago",
   },
   genres = ["Shounen", "Action", "Supernatural"],
@@ -57,6 +59,7 @@ export default function AnimePostCard({
   const [liked, setLiked] = useState(isLiked)
   const [likeCount, setLikeCount] = useState(stats.likes)
   const [bookmarked, setBookmarked] = useState(isBookmarked)
+  const [isHovered, setIsHovered] = useState(false)
 
   const handleLike = () => {
     if (liked) {
@@ -72,17 +75,30 @@ export default function AnimePostCard({
   }
 
   return (
-    <Card className="max-w-[400px] mx-auto border-2 bg-background hover:shadow-xl transition-shadow duration-300  flex justify-between flex-col">
+    <Card
+      className="max-w-[400px] mx-auto border-2 bg-background hover:shadow-xl transition-all duration-300 flex justify-between flex-col overflow-hidden"
+      style={{
+        boxShadow: isHovered ? "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)" : "",
+        transform: isHovered ? "translateY(-2px)" : "",
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
       <CardHeader className="pt-5 pb-2 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <Avatar className="h-12 w-12 border-2 border-primary">
+              <Avatar
+                className={cn(
+                  "h-12 w-12 border-2 transition-all duration-300",
+                  isHovered ? "border-primary shadow-md" : "border-primary/70",
+                )}
+              >
                 <AvatarImage src={author.avatar} alt={author.name} />
                 <AvatarFallback className="bg-primary/10">{author.name.charAt(0)}</AvatarFallback>
               </Avatar>
               {author.level && (
-                <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs px-1 rounded-md font-medium">
+                <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-md font-medium shadow-sm">
                   Lv.{author.level}
                 </div>
               )}
@@ -98,7 +114,7 @@ export default function AnimePostCard({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
+              <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted">
                 <MoreHorizontal className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
@@ -111,14 +127,16 @@ export default function AnimePostCard({
         </div>
 
         <div>
-          <h2 className="text-xl font-bold leading-tight mb-3 text-primary">{post.title}</h2>
+          <h2 className="text-xl font-bold leading-tight mb-3 text-primary hover:text-primary/90 transition-colors cursor-pointer">
+            {post.title}
+          </h2>
 
           <div className="flex flex-wrap gap-2 mb-3">
             {genres.map((genre, index) => (
               <Badge
                 key={index}
                 variant="secondary"
-                className="rounded-full font-medium bg-primary/10 hover:bg-primary/20 transition-colors"
+                className="rounded-full font-medium bg-primary/10 hover:bg-primary/20 transition-colors cursor-pointer"
               >
                 {genre}
               </Badge>
@@ -128,50 +146,85 @@ export default function AnimePostCard({
       </CardHeader>
 
       <CardContent className="py-3 space-y-4">
-            
-      <div className="relative h-48">
+      
+          <div
+            className="relative h-48 overflow-hidden rounded-md"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+          >
             <Image
-                 src={'https://thumbs.dreamstime.com/b/anime-boy-aesthetic-image-wallpaper-cute-cartoon-anime-wallpaper-342273503.jpg'}
-                 alt={post.title}
-                 fill
-                className="object-cover hover:scale-105 transition-transform"
-              />
-      </div>
+              src={"https://thumbs.dreamstime.com/b/anime-boy-aesthetic-image-wallpaper-cute-cartoon-anime-wallpaper-342273503.jpg"}
+              alt={post.title}
+              fill
+              className={cn("object-cover transition-transform duration-500", isHovered ? "scale-105" : "")}
+            />
+          </div>
         <p className="text-muted-foreground leading-relaxed line-clamp-3">{post.excerpt}</p>
 
-        <Button variant="link" className="px-0 font-semibold text-primary hover:text-primary/80">
+        <Button
+          variant="link"
+          className="px-0 font-semibold text-primary hover:text-primary/80 hover:underline transition-all"
+        >
           Read more →
         </Button>
       </CardContent>
 
       <CardFooter className="py-3 border-t flex justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" className="flex items-center gap-1.5" onClick={handleLike}>
-            <Heart
-              className={cn("h-5 w-5 transition-colors", liked ? "fill-red-500 text-red-500" : "text-muted-foreground")}
-            />
-            <span className={cn("font-medium", liked ? "text-red-500" : "text-muted-foreground")}>{likeCount}</span>
-          </Button>
+          <motion.div whileTap={{ scale: 0.9 }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "flex items-center gap-1.5 transition-colors",
+                liked ? "bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-950/30" : "",
+              )}
+              onClick={handleLike}
+            >
+              <Heart
+                className={cn(
+                  "h-5 w-5 transition-colors",
+                  liked ? "fill-red-500 text-red-500" : "text-muted-foreground",
+                )}
+              />
+              <span className={cn("font-medium", liked ? "text-red-500" : "text-muted-foreground")}>{likeCount}</span>
+            </Button>
+          </motion.div>
 
-          <Button variant="ghost" size="sm" className="flex items-center gap-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-1.5 hover:bg-blue-50 dark:hover:bg-blue-950/20"
+          >
             <MessageCircle className="h-5 w-5 text-muted-foreground" />
             <span className="font-medium text-muted-foreground">{stats.comments}</span>
           </Button>
 
-          <Button variant="ghost" size="sm" className="flex items-center gap-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="flex items-center gap-1.5 hover:bg-green-50 dark:hover:bg-green-950/20"
+          >
             <Share2 className="h-5 w-5 text-muted-foreground" />
             <span className="font-medium text-muted-foreground">{stats.shares}</span>
           </Button>
         </div>
 
-        <Button variant="ghost" size="sm" className="px-2" onClick={handleBookmark}>
-          <Bookmark
-            className={cn(
-              "h-5 w-5 transition-colors",
-              bookmarked ? "fill-primary text-primary" : "text-muted-foreground",
-            )}
-          />
-        </Button>
+        <motion.div whileTap={{ scale: 0.9 }}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={cn("px-2 transition-colors", bookmarked ? "bg-primary/10 hover:bg-primary/20" : "")}
+            onClick={handleBookmark}
+          >
+            <Bookmark
+              className={cn(
+                "h-5 w-5 transition-colors",
+                bookmarked ? "fill-primary text-primary" : "text-muted-foreground",
+              )}
+            />
+          </Button>
+        </motion.div>
       </CardFooter>
     </Card>
   )

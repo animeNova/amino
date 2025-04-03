@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import { Inter,  } from "next/font/google";
+import { Inter} from "next/font/google";
+import QueryProvider from '@/providers/QueryProvider';
+
 import "./globals.css";
+import { Toaster } from "@/components/ui/toaster";
 const geistInter = Inter({
     subsets : ['latin'] ,
     weight : ['400','500','900']
@@ -20,7 +23,10 @@ export default function RootLayout({
       <body
         className={`${geistInter.className}  antialiased`}
       >
+        <QueryProvider>
         {children}
+        <Toaster />
+        </QueryProvider>
       </body>
     </html>
   );

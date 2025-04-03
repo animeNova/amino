@@ -1,4 +1,4 @@
-import { ColumnType, Generated } from 'kysely'
+import { ColumnType, Generated, Insertable, Selectable, Updateable } from 'kysely'
 
 export interface BaseEntity {
   createdAt: ColumnType<Date, string, never>;
@@ -10,6 +10,16 @@ interface Database {
   session: SessionTable;
   account : AccountTable;
   verification : VerificationTable;
+  user_activities: UserActivitiesTable;
+  user_levels: UserLevelsTable;
+  level_definitions: LevelDefinitionsTable;
+  community : CommuityTable;
+  join_requests : JoinRequestTable;
+  members : MembersTable;
+  genre : GenreTable;
+  posts : PostsTable;
+  post_likes : PostLikesTable;
+  post_comments : PostCommentsTable;
 }
 
 interface UsersTable extends BaseEntity {
@@ -18,6 +28,7 @@ interface UsersTable extends BaseEntity {
   name: string;
   emailVerified:boolean;
   image?:string;
+  role : 'user' | 'admin' | 'superadmin';
 }
 
 interface SessionTable extends BaseEntity {
@@ -49,4 +60,139 @@ interface VerificationTable extends BaseEntity {
   expiresAt : Date;
 }
 
+export interface UserActivitiesTable {
+  id: Generated<string>;
+  user_id: string;
+  activity_type: string;
+  points: number;
+  created_at: ColumnType<Date, string | undefined, never>;
+}
+
+export interface UserLevelsTable {
+  id: Generated<string>;
+  user_id: string;
+  level: number;
+  current_points: number;
+  points_to_next_level: number;
+  updated_at: ColumnType<Date, string | undefined, never>;
+}
+
+export interface LevelDefinitionsTable {
+  level: number;
+  points_required: number;
+  title: string | null;
+  badge_url: string | null;
+  benefits: string | null;
+}
+
+export interface CommuityTable {
+  id: Generated<string>;
+  name : string;
+  handle : string;
+  description : string;
+  language : string;
+  visibility : 'public' | 'private' | 'request_only';
+  image : string;
+  backgroundImage : string;
+  created_by : string;
+  genre_id : string;
+  updated_at: ColumnType<Date, string | undefined, never>;
+}
+export interface JoinRequestTable {
+  id: Generated<string>;
+  user_id: string;
+  community_id: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  requested_at: ColumnType<Date, string | undefined, never>;
+  responded_at: ColumnType<Date, string | undefined, never>;
+  responded_by : string;
+  updated_at: ColumnType<Date, string | undefined, never>;
+}
+export interface MembersTable {
+  id: Generated<string>;
+  user_id: string;
+  communityId:string;
+  role : 'user' | 'moderator' | 'admin';
+  status : 'pending' | 'accepted' | 'rejected';
+  approved_by : string;
+  joined_at: ColumnType<Date, string | undefined, never>;
+  created_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, never>;
+}
+export interface GenreTable {
+  id: Generated<string>;
+  name: string;
+  description: string;
+  created_by: string;
+  created_at: ColumnType<Date, string | undefined, never>;
+}
+export interface PostsTable {
+  id: Generated<string>;
+  title : string;
+  content : string;
+  image : string;
+  tags : string[];
+  user_id : string;
+  community_id : string;
+  status : 'pending' | 'accepted' | 'rejected';
+  created_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, never>;
+}
+export interface PostCommentsTable {
+  id: Generated<string>;
+  content : string;
+  user_id : string;
+  post_id : string;
+  parent_comment : string | null;
+  created_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, never>;
+}
+export interface PostLikesTable {
+  user_id: string;
+  post_id: string;
+}
+
+
+
+
+export type UserActivity = Selectable<UserActivitiesTable>;
+export type NewUserActivity = Insertable<UserActivitiesTable>;
+
+export type UserLevel = Selectable<UserLevelsTable>;
+export type NewUserLevel = Insertable<UserLevelsTable>;
+export type UserLevelUpdate = Updateable<UserLevelsTable>;
+
+export type LevelDefinition = Selectable<LevelDefinitionsTable>;
+export type NewLevelDefinition = Insertable<LevelDefinitionsTable>;
+
+export type Community = Selectable<CommuityTable>;
+export type NewCommunity = Insertable<CommuityTable>;
+export type CommunityUpdate = Updateable<CommuityTable>;
+
+export type JoinRequest = Selectable<JoinRequestTable>;
+export type NewJoinRequest = Insertable<JoinRequestTable>;
+export type JoinRequestUpdate = Updateable<JoinRequestTable>;
+
+export type Members = Selectable<MembersTable>;
+export type NewMember = Insertable<MembersTable>;
+export type MemberUpdate = Updateable<MembersTable>;
+
+export type Genre = Selectable<GenreTable>;
+export type NewGenre = Insertable<GenreTable>;
+export type GenreUpdate = Updateable<GenreTable>;
+
+export type Post = Selectable<PostsTable>;
+export type NewPost = Insertable<PostsTable>;
+export type PostUpdate = Updateable<PostsTable>;
+
+export type PostLikes = Selectable<PostLikesTable>;
+export type NewPostLike = Insertable<PostLikesTable>;
+export type PostLikeUpdate = Updateable<PostLikesTable>;
+
+export type PostComments = Selectable<PostCommentsTable>;
+export type NewPostComment = Insertable<PostCommentsTable>;
+export type PostCommentUpdate = Updateable<PostCommentsTable>;
+
+
 export type { Database }
+

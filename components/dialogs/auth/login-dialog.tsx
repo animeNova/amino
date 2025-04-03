@@ -56,7 +56,7 @@ const LoginDialog = () => {
   return (
 
        <Dialog open={isOpen}  onOpenChange={closeLogin} >
-      <DialogContent className="bg-transparent border-none shadow-none" hideCloseButton>
+      <DialogContent className="bg-transparent border-none shadow-none" hideCloseButton >
       <div className="flex items-center justify-center">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
