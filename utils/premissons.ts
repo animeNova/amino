@@ -13,20 +13,6 @@ export enum Role {
 }
 
 /**
- * Check if a user is the author of a comment
- */
-export async function isCommentAuthor(userId: string, commentId: string): Promise<boolean> {
-  const comment = await db
-    .selectFrom('post_comments')
-    .where('id', '=', commentId)
-    .where('user_id', '=', userId)
-    .select('id')
-    .executeTakeFirst();
-    
-  return !!comment;
-}
-
-/**
  * Check if a user is the author of a post
  */
 export async function isPostAuthor(userId: string, postId: string): Promise<boolean> {
@@ -39,6 +25,78 @@ export async function isPostAuthor(userId: string, postId: string): Promise<bool
     
   return !!post;
 }
+/**
+ * Check if a user can create Posts
+ * - Any authenticated user can create posts in public communities
+ * - For private communities, the user must be a member
+*/
+export async function canCreatePost(userId: string, communityId: string): Promise<boolean> {
+  // Get the community visibility
+  const community = await db
+    .selectFrom('community')
+    .where('id', '=', communityId)
+    .select(['visibility'])
+    .executeTakeFirst();
+    
+  if (!community) return false;
+  const membership = await db
+  .selectFrom('members')
+  .where('user_id', '=', userId)
+  .where('communityId', '=', communityId)
+  .select('id')
+  .executeTakeFirst();
+
+  return !!membership;
+}
+export async function canEditPost(userId: string,postId : string): Promise<boolean> {
+    // First, check if the user is the comment author (simplest case)
+    const isAuthor = await isPostAuthor(userId, postId);
+    if (isAuthor) return true;
+    return false;
+}
+export async function canDeletePost(userId: string,postId : string): Promise<boolean> {
+    // First, check if the user is the comment author (simplest case)
+    const isAuthor = await isPostAuthor(userId, postId);
+    if (isAuthor) return true;
+    
+    // Check if user is a system admin
+    const isAdmin = await isSystemAdmin(userId);
+    if (isAdmin) return true;
+    
+    // Get the comment details to check post and community permissions
+    const post = await db
+      .selectFrom('posts')
+      .where('id', '=', postId)
+      .select('id')
+      .executeTakeFirst();
+      
+    if (!post) return false;
+    
+    // Check if user is a community moderator
+    const communityId = await getPostCommunityId(post.id);
+    if (communityId) {
+      const isModerator = await isCommunityModerator(userId, communityId);
+      if (isModerator) return true;
+    }
+    return false;
+}
+
+/**
+ * Check if a user is the author of a comment
+ */
+export async function isCommentAuthor(userId: string, commentId: string): Promise<boolean> {
+  const comment = await db
+    .selectFrom('comments')
+    .where('id', '=', commentId)
+    .where('user_id', '=', userId)
+    .select('id')
+    .executeTakeFirst();
+    
+  return !!comment;
+}
+
+
+
 
 /**
  * Check if a user is a moderator or admin of a community
@@ -49,7 +107,6 @@ export async function isCommunityModerator(userId: string, communityId: string):
     .where('user_id', '=', userId)
     .where('communityId', '=', communityId)
     .where('role', 'in', ['moderator', 'admin'])
-    .where('status', '=', 'accepted')
     .select('id')
     .executeTakeFirst();
     
@@ -80,7 +137,7 @@ export async function getPostCommunityId(postId: string): Promise<string | null>
     .select('community_id')
     .executeTakeFirst();
     
-  return post?.community_id || null;
+  return post?.community_id ?? null;
 }
 
 /**
@@ -88,13 +145,13 @@ export async function getPostCommunityId(postId: string): Promise<string | null>
  */
 export async function getCommentCommunityId(commentId: string): Promise<string | null> {
   const comment = await db
-    .selectFrom('post_comments as pc')
+    .selectFrom('comments as pc')
     .innerJoin('posts as p', 'pc.post_id', 'p.id')
     .where('pc.id', '=', commentId)
     .select('p.community_id')
     .executeTakeFirst();
     
-  return comment?.community_id || null;
+  return comment?.community_id ?? null;
 }
 
 /**
@@ -124,7 +181,7 @@ export async function canDeleteComment(userId: string, commentId: string): Promi
   
   // Get the comment details to check post and community permissions
   const comment = await db
-    .selectFrom('post_comments')
+    .selectFrom('comments')
     .where('id', '=', commentId)
     .select('post_id')
     .executeTakeFirst();
@@ -155,24 +212,13 @@ export async function canCreateComment(userId: string, postId: string): Promise<
   const communityId = await getPostCommunityId(postId);
   if (!communityId) return false;
   
-  // Get the community visibility
-  const community = await db
-    .selectFrom('community')
-    .where('id', '=', communityId)
-    .select(['visibility'])
-    .executeTakeFirst();
-    
-  if (!community) return false;
-  
-  // Public communities allow anyone to comment
-  if (community.visibility === 'public') return true;
-  
+
+
   // For private or request_only communities, check membership
   const membership = await db
     .selectFrom('members')
     .where('user_id', '=', userId)
     .where('communityId', '=', communityId)
-    .where('status', '=', 'accepted')
     .select('id')
     .executeTakeFirst();
     
@@ -200,4 +246,59 @@ export async function getCommentPermissions(userId: string | null, commentId: st
     canEdit,
     canDelete
   };
+}
+
+/**
+ * Get permissions for a user to Request Join a community
+ */
+export async function canRequestJoin(userId: string, communityId: string): Promise<boolean> {
+  // Check if the user is already a member of the community
+  const membership = await db
+    .selectFrom('members')
+    .where('user_id', '=', userId)
+    .where('communityId', '=', communityId)
+    .select('id')
+    .executeTakeFirst();
+    
+  if (membership) return false;
+  
+  // Check if the community is request-only
+  const community = await db
+    .selectFrom('community')
+    .where('id', '=', communityId)
+    .select(['visibility'])
+    .executeTakeFirst();
+    
+  if(community?.visibility !== 'private') return false;
+
+  // Check if the user has already requested to join
+  const request = await db.selectFrom('join_requests')
+    .where('user_id', '=', userId)
+    .where('community_id', '=', communityId)
+    .where('status', '=', 'pending')
+    .select('id')
+    .executeTakeFirst();
+  if(request) return false;
+  return true;
+}
+
+/**
+ * update Join Request status
+ * - Only community admins or moderators can update join request status
+ */
+export async function canUpdateJoinRequestStatus(userId: string, requestId: string): Promise<boolean> {
+  // Check if the user is a community moderator or admin
+  const request = await db
+    .selectFrom('join_requests')
+    .where('id', '=', requestId)
+    .select(['community_id'])
+    .executeTakeFirst();
+    
+  if (!request) return false;
+  const isAdmin = await isSystemAdmin(userId);
+  if (isAdmin) return true;
+  const isModerator = await isCommunityModerator(userId, request.community_id);
+  if (isModerator) return true;
+  
+  return false;
 }

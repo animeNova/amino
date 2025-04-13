@@ -19,7 +19,8 @@ interface Database {
   genre : GenreTable;
   posts : PostsTable;
   post_likes : PostLikesTable;
-  post_comments : PostCommentsTable;
+  comments : CommentsTable;
+  comments_likes : CommentLikesTable;
 }
 
 interface UsersTable extends BaseEntity {
@@ -75,6 +76,9 @@ export interface UserLevelsTable {
   current_points: number;
   points_to_next_level: number;
   updated_at: ColumnType<Date, string | undefined, never>;
+  $$transform: {
+    type: 'notnull';
+  };
 }
 
 export interface LevelDefinitionsTable {
@@ -91,9 +95,9 @@ export interface CommuityTable {
   handle : string;
   description : string;
   language : string;
-  visibility : 'public' | 'private' | 'request_only';
+  visibility : 'public' | 'private';
   image : string;
-  backgroundImage : string;
+  banner : string;
   created_by : string;
   genre_id : string;
   updated_at: ColumnType<Date, string | undefined, never>;
@@ -105,15 +109,14 @@ export interface JoinRequestTable {
   status: 'pending' | 'accepted' | 'rejected';
   requested_at: ColumnType<Date, string | undefined, never>;
   responded_at: ColumnType<Date, string | undefined, never>;
-  responded_by : string;
+  responded_by ?: string;
   updated_at: ColumnType<Date, string | undefined, never>;
 }
 export interface MembersTable {
   id: Generated<string>;
   user_id: string;
   communityId:string;
-  role : 'user' | 'moderator' | 'admin';
-  status : 'pending' | 'accepted' | 'rejected';
+  role : 'member' | 'moderator' | 'admin';
   approved_by : string;
   joined_at: ColumnType<Date, string | undefined, never>;
   created_at: ColumnType<Date, string | undefined, never>;
@@ -138,18 +141,32 @@ export interface PostsTable {
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, never>;
 }
-export interface PostCommentsTable {
+export interface CommentsTable {
   id: Generated<string>;
-  content : string;
-  user_id : string;
-  post_id : string;
-  parent_comment : string | null;
+  post_id: string;
+  user_id: string;
+  content: string;
+  parent_id: string | null;
+  depth: number;
+  reply_count: number;
+  position: number | null;
+  path: string[];
+  is_edited: boolean;
+  is_deleted: boolean;
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, never>;
 }
+
 export interface PostLikesTable {
   user_id: string;
   post_id: string;
+}
+
+export interface CommentLikesTable {
+  user_id: string;
+  comment_id: string;
+  created_at: ColumnType<Date, string | undefined, never>;
+
 }
 
 
@@ -181,7 +198,7 @@ export type Genre = Selectable<GenreTable>;
 export type NewGenre = Insertable<GenreTable>;
 export type GenreUpdate = Updateable<GenreTable>;
 
-export type Post = Selectable<PostsTable>;
+export type Posts = Selectable<PostsTable>;
 export type NewPost = Insertable<PostsTable>;
 export type PostUpdate = Updateable<PostsTable>;
 
@@ -189,9 +206,13 @@ export type PostLikes = Selectable<PostLikesTable>;
 export type NewPostLike = Insertable<PostLikesTable>;
 export type PostLikeUpdate = Updateable<PostLikesTable>;
 
-export type PostComments = Selectable<PostCommentsTable>;
-export type NewPostComment = Insertable<PostCommentsTable>;
-export type PostCommentUpdate = Updateable<PostCommentsTable>;
+export type PostComments = Selectable<CommentsTable>;
+export type NewPostComment = Insertable<CommentsTable>;
+export type PostCommentUpdate = Updateable<CommentsTable>;
+
+export type CommentLikes = Selectable<CommentLikesTable>;
+export type NewCommentLike = Insertable<CommentLikesTable>;
+export type CommentLikeUpdate = Updateable<CommentLikesTable>;
 
 
 export type { Database }

@@ -1,13 +1,12 @@
 'use server';
 
 import { db } from "@/db";
-import { auth } from "@/lib/auth";
 import { isSystemAdmin } from "@/utils/premissons";
-import { headers } from "next/headers";
 import { z } from "zod";
+import { getUserId } from "../helpers/get-userId";
 
 
-const createGenreSchema = z.object({
+export const createGenreSchema = z.object({
     name: z.string().min(1).max(50), 
     description: z.string().min(1).max(50), 
   })
@@ -15,10 +14,9 @@ const createGenreSchema = z.object({
 
 export const CreateGenreAction =async (data : z.infer<typeof createGenreSchema>) => {
     try {
-        const user = await auth.api.getSession({
-            headers : await headers()
-        })
-        const hasPermission = await isSystemAdmin(user?.user.id as string);
+        const userId = await getUserId();
+        
+        const hasPermission = await isSystemAdmin(userId);
         if (!hasPermission) {
             throw new Error("You don't have permission to create a community.");
         }
@@ -26,7 +24,7 @@ export const CreateGenreAction =async (data : z.infer<typeof createGenreSchema>)
         const community = await db.insertInto('genre').values({
             name : parsedData.name,
             description : parsedData.description,
-            created_by: user?.user.id as string,
+            created_by: userId,
         }).returningAll().executeTakeFirst();
 
         return community

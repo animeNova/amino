@@ -1,16 +1,14 @@
 'use server';
 
 import { db } from "@/db";
-import { auth } from "@/lib/auth";
 import { isSystemAdmin } from "@/utils/premissons";
-import { headers } from "next/headers";
+import { getUserId } from "../helpers/get-userId";
 
 export const deleteCommunity = async (communityId: string) => {
     try {
-        const user = await auth.api.getSession({
-            headers : await headers()
-        })
-        const hasPermission = await isSystemAdmin(user?.user.id as string);
+        const userId = await getUserId();
+        
+        const hasPermission = await isSystemAdmin(userId);
         if (!hasPermission) {
             throw new Error("You don't have permission to create a community.");
         }

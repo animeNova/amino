@@ -42,3 +42,17 @@ export const getGenres = async (options: GetGenresOptions = {}): Promise<GetGenr
         throw new Error('Failed to fetch genres');
     }
 }
+
+export const getGenreById = async (id: string): Promise<Genre | null | undefined> => {
+    try {
+        const genre = await db
+            .selectFrom('genre')
+            .where('id', '=', id)
+            .selectAll()
+            .executeTakeFirst();
+        return genre;
+    } catch (error) {
+        console.error('Error fetching genre by ID:', error);
+        throw new Error('Failed to fetch genre by ID');
+    }
+}   
