@@ -1,8 +1,10 @@
 'use client';
 
-import { CreateGenreAction, createGenreSchema } from '@/app/actions/genre/create';
+import { CreateGenreAction } from '@/app/actions/genre/create';
+import { deleteGenre } from '@/app/actions/genre/delete';
 import { getGenreById, getGenres, GetGenresOptions } from '@/app/actions/genre/get';
-import { UpdateGenreAction, updateGenreSchema } from '@/app/actions/genre/update';
+import { UpdateGenreAction, } from '@/app/actions/genre/update';
+import { genreSchema } from '@/schemas/schema';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useState } from 'react';
@@ -10,18 +12,19 @@ import { z } from 'zod';
 
 type UseGenresOptions = {
   initialOptions?: GetGenresOptions;
-  communityId?: string;
+  genreId?: string;
 };
 
-export function useCommunitys(options: UseGenresOptions = {}) {
+export function useGenres(options: UseGenresOptions = {}) {
   const queryClient = useQueryClient();
-  const { initialOptions = {}, communityId: id } = options;
+  const { initialOptions = {}, genreId: id } = options;
   const [filterOptions, setFilterOptions] = useState<GetGenresOptions>(initialOptions);
   
   // Query to fetch posts with the current options
   const genresQuery = useQuery({
     queryKey: ['genres', filterOptions],
     queryFn: () => getGenres(filterOptions),
+    staleTime: 0 // Consider data stale immediately
   });
 
   //  Query a single post by ID
@@ -33,38 +36,57 @@ export function useCommunitys(options: UseGenresOptions = {}) {
     },
     enabled: !!id, // Only run the query if an ID is provided
     staleTime: 1000 * 60, // Consider data fresh for 1 minute
+    refetchOnMount: true,
+
   });
   
   // Mutation to create a post
   const createGenreMutation = useMutation({
-    mutationFn: (data: z.infer<typeof createGenreSchema> ) => CreateGenreAction(data),
+    mutationFn: (data: z.infer<typeof genreSchema> ) => CreateGenreAction(data),
     onSuccess: () => {
       // Invalidate the posts query to refetch the latest data
-      queryClient.invalidateQueries({ queryKey: ['communitys'] });
+      queryClient.invalidateQueries({ queryKey: ['genres'] });
     },
   });
 
   // Mutation to update a post
   const updateGenreMutation = useMutation({
-    mutationFn: ({ data, id }: { data: z.infer<typeof updateGenreSchema>; id: string }) => UpdateGenreAction(id, data),
+    mutationFn: (data : z.infer<typeof genreSchema>) => UpdateGenreAction(data),
     onSuccess: () => {
       // Invalidate the posts query to refetch the latest data
-      queryClient.invalidateQueries({ queryKey: ['communitys'] });
+      queryClient.invalidateQueries({ queryKey: ['genres'] });
+    },
+  });
+
+  const deleteGenreMutation = useMutation({
+    mutationFn: (id : string) => deleteGenre(id),
+    onSuccess: () => {
+      // Invalidate the posts query to refetch the latest data
+      queryClient.invalidateQueries({ queryKey: ['genres'] });
+      // Force refetch the genres list immediately
+      genresQuery.refetch();
     },
   });
 
 
   
   return {
-    genres: genresQuery.data || [],
+    results: genresQuery.data,
+    isLoading: genresQuery.isPending,
     genreQuery : genreQuery.data || null,
+    isLoadingGenre: genreQuery.isFetching,
     createGenre: createGenreMutation.mutate,
+    isError : createGenreMutation.isError || updateGenreMutation.isError,
     isCreating: createGenreMutation.isPending,
     updateGenre: updateGenreMutation.mutate,
     isUpdating: updateGenreMutation.isPending,
+    deleteGenre: deleteGenreMutation.mutate,
+    isDeleting: deleteGenreMutation.isPending,
     options,
     setFilterOptions,
     refetchGenres: genresQuery.refetch,
     refetchGenre: genreQuery.refetch,
+    error : createGenreMutation.error || updateGenreMutation.error,
+    isSuccess : createGenreMutation.isSuccess || updateGenreMutation.isSuccess,
   };
 }

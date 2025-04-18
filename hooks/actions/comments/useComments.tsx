@@ -1,9 +1,10 @@
 'use client';
 
-import { createComment, createCommentSchema } from '@/app/actions/comments/create';
+import { createComment } from '@/app/actions/comments/create';
 import { getNestedComments , getCommentThread} from '@/app/actions/comments/get';
-import { updateCommentAction, updateCommentSchema } from '@/app/actions/comments/update';
+import { updateCommentAction } from '@/app/actions/comments/update';
 import { GetCommunitiesOptions } from '@/app/actions/community/get';
+import { createCommentSchema, updateCommentSchema } from '@/schemas/schema';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { useState } from 'react';
@@ -58,7 +59,7 @@ export function useComments(options: UseCommentsOptions = {}) {
 
   
   return {
-    comments: commentsQuery.data || [],
+    comments: commentsQuery.data ,
     isErrorComments: commentsQuery.isError,
     isLoadingComments: commentsQuery.isLoading,
     commentQuery : commentQuery.data || null,

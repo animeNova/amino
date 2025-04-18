@@ -17,7 +17,7 @@ export const sendEmail = async ({html,subject,to} : SendEmailProps) => {
             html ,
             to
         })
-        console.log(data);
+        (data);
         
     } catch (error) {
         return { success: false, error };

@@ -1,11 +1,10 @@
 import React from 'react'
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { Button } from '@/components/ui/button'
 import { ModeratorSidebar } from '../app/(dashboards)/dashboard/community/[id]/components/moderator-sidebar'
 
 const Provider = ({
     children
-}: {children : React.ReactNode}) => {
+}: {children : Readonly<React.ReactNode>}) => {
   return (
     <SidebarProvider>
       <ModeratorSidebar />

@@ -3,9 +3,10 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
 import { getPostById, getPostsByCommunity, GetPostsOptions } from '../../../app/actions/posts/get';
-import { CreatePostAction , createPostSchema} from '@/app/actions/posts/create';
+import { CreatePostAction } from '@/app/actions/posts/create';
 import { useState } from 'react';
-import { UpdatePostAction, updatePostSchema } from '@/app/actions/posts/update';
+import { UpdatePostAction } from '@/app/actions/posts/update';
+import { createPostSchema, updatePostSchema } from '@/schemas/schema';
 
 type UsePostsOptions = {
   initialOptions?: GetPostsOptions;
@@ -60,7 +61,7 @@ export function usePosts(options: UsePostsOptions = {}) {
   
   return {
        // List-related properties and methods
-       posts: postsQuery.data || [],
+       posts: postsQuery.data,
        isLoadingPosts: postsQuery.isLoading,
        isErrorPosts: postsQuery.isError,
        postsError: postsQuery.error,

@@ -1,14 +1,13 @@
 'use server';
 
 import { db } from "@/db";
-import { canEditComment } from "@/utils/premissons";
+import { canEditComment } from "@/utils/permissions";
 import { z } from "zod";
 import { getUserId } from "../helpers/get-userId";
+import { updateCommentSchema } from "@/schemas/schema";
 
 
-export const updateCommentSchema = z.object({
-    content: z.string().min(1).max(50),  
-  })
+
 
 
 export const updateCommentAction =async (commentId : string,data : z.infer<typeof updateCommentSchema>) => {

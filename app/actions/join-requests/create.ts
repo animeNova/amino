@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from "@/db";
-import { canRequestJoin } from "@/utils/premissons";
+import { canRequestJoin } from "@/utils/permissions";
 import { getUserId } from "../helpers/get-userId";
 
 export const CreateJoinRequest =async (communityId : string) => {

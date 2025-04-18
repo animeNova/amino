@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from "@/db";
-import { isSystemAdmin } from "@/utils/premissons";
+import { isSystemAdmin } from "@/utils/permissions";
 import { getUserId } from "../helpers/get-userId";
 
 export const deleteGenre = async (genreId: string) => {
@@ -16,7 +16,7 @@ export const deleteGenre = async (genreId: string) => {
         if (!deletedGenre) {
             throw new Error("Genre not found or already deleted.");
         }
-        return deletedGenre;
+        return true;
     } catch (error) {
         console.error('Error deleting genre:', error);
         throw new Error('Failed to delete genre');

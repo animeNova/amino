@@ -41,7 +41,7 @@ export async function canCreatePost(userId: string, communityId: string): Promis
   if (!community) return false;
   const membership = await db
   .selectFrom('members')
-  .where('user_id', '=', userId)
+  .where('user_Id', '=', userId)
   .where('communityId', '=', communityId)
   .select('id')
   .executeTakeFirst();
@@ -104,7 +104,7 @@ export async function isCommentAuthor(userId: string, commentId: string): Promis
 export async function isCommunityModerator(userId: string, communityId: string): Promise<boolean> {
   const member = await db
     .selectFrom('members')
-    .where('user_id', '=', userId)
+    .where('user_Id', '=', userId)
     .where('communityId', '=', communityId)
     .where('role', 'in', ['moderator', 'admin'])
     .select('id')
@@ -217,7 +217,7 @@ export async function canCreateComment(userId: string, postId: string): Promise<
   // For private or request_only communities, check membership
   const membership = await db
     .selectFrom('members')
-    .where('user_id', '=', userId)
+    .where('user_Id', '=', userId)
     .where('communityId', '=', communityId)
     .select('id')
     .executeTakeFirst();
@@ -255,7 +255,7 @@ export async function canRequestJoin(userId: string, communityId: string): Promi
   // Check if the user is already a member of the community
   const membership = await db
     .selectFrom('members')
-    .where('user_id', '=', userId)
+    .where('user_Id', '=', userId)
     .where('communityId', '=', communityId)
     .select('id')
     .executeTakeFirst();
@@ -300,5 +300,27 @@ export async function canUpdateJoinRequestStatus(userId: string, requestId: stri
   const isModerator = await isCommunityModerator(userId, request.community_id);
   if (isModerator) return true;
   
+  return false;
+}
+
+export async function canCancelJoinRequest(userId: string, requestId: string): Promise<boolean> {
+  // Check if the user is the author of the request
+  const request = await db
+   .selectFrom('join_requests')
+   .where('id', '=', requestId)
+   .where('user_id', '=', userId)
+   .where('status', '=', 'pending')
+   .select('id')
+   .executeTakeFirst();
+
+  return!!request;
+}
+
+export async function canGetJoinRequests(userId: string, communityId: string): Promise<boolean> {
+  // Check if the user is a community moderator or admin
+  const isAdmin = await isSystemAdmin(userId);
+  if (isAdmin) return true; 
+  const isModerator = await isCommunityModerator(userId, communityId);
+  if (isModerator) return true
   return false;
 }

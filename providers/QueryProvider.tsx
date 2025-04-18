@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState, type ReactNode } from 'react';
 
-export default function QueryProvider({ children }: { children: ReactNode }) {
+export default function QueryProvider({ children }: Readonly<{ children: ReactNode }>) {
   // Create a new QueryClient instance for each session
   // This prevents data sharing between different users and requests
   const [queryClient] = useState(() => new QueryClient({

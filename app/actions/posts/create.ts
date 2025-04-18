@@ -2,17 +2,12 @@
 
 import { db } from "@/db";
 import { auth } from "@/lib/auth";
-import { canCreatePost } from "@/utils/premissons";
+import { createPostSchema } from "@/schemas/schema";
+import { canCreatePost } from "@/utils/permissions";
 import { headers } from "next/headers";
 import { z } from "zod";
 
 
-export const createPostSchema = z.object({
-    title: z.string().min(1, { message: "Title is required" }),
-    content : z.string().min(1, { message: "Content is required" }),
-    image : z.string().url(),
-    tags : z.array(z.string()),
-  })
 
 
 export const CreatePostAction =async (communityId : string,data : z.infer<typeof createPostSchema>) => {

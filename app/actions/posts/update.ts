@@ -2,17 +2,12 @@
 
 import { db } from "@/db";
 import { auth } from "@/lib/auth";
-import { canEditPost } from "@/utils/premissons";
+import { updatePostSchema } from "@/schemas/schema";
+import { canEditPost } from "@/utils/permissions";
 import { headers } from "next/headers";
 import { z } from "zod";
 
 
-export const updatePostSchema = z.object({
-    title: z.string().min(1, { message: "Title is required" }),
-    content : z.string().min(1, { message: "Content is required" }),
-    image : z.string().url(),
-    tags : z.array(z.string()),
-  })
 
 
 export const UpdatePostAction =async (postId : string,data : z.infer<typeof updatePostSchema>) => {

@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from "@/db";
-import { canDeleteComment } from "@/utils/premissons";
+import { canDeleteComment } from "@/utils/permissions";
 import { getUserId } from "../helpers/get-userId";
 
 export const deleteComment = async (commentId: string) => {

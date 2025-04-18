@@ -2,7 +2,8 @@
 
 import { db } from "@/db";
 import { JoinRequest } from "@/db/types";
-
+import {canGetJoinRequests} from '@/utils/permissions'
+import { getUserId } from "../helpers/get-userId";
 export interface GetJoinRequestsOptions {
     limit?: number;
     offset?: number;
@@ -19,6 +20,11 @@ export const getJoinRequests = async (communityId: string, options: GetJoinReque
     const limit = options.limit ?? 10;
     const offset = options.offset ?? 0;
     try {
+        const userId = await getUserId();
+        const hasPermission = await canGetJoinRequests(userId, communityId);
+        if (!hasPermission) {
+            throw new Error('You do not have permission to get join requests');
+        }
         let countQuery = db.selectFrom('join_requests').where('community_id', '=', communityId);
         let query = db.selectFrom('join_requests').where('community_id', '=', communityId);
         const countResult = await countQuery
@@ -57,12 +63,15 @@ export const getJoinRequestById = async (requestId: string) : Promise<JoinReques
         throw new Error('Failed to fetch join request');
     }
 }
-export const getJoinRequestByUserId = async (userId: string, communityId: string): Promise<JoinRequest[] | null>   => {
+
+export const getJoinRequestByUserId = async (): Promise<JoinRequest[] | null>   => {
     try {
+        const userId = await getUserId();
+
         const joinRequest = await db
             .selectFrom('join_requests')
             .where('user_id', '=', userId)
-            .where('community_id', '=', communityId)
+            .where('status', '=', 'pending')
             .selectAll()
             .execute();
         return joinRequest || null;

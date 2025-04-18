@@ -114,7 +114,7 @@ export interface JoinRequestTable {
 }
 export interface MembersTable {
   id: Generated<string>;
-  user_id: string;
+  user_Id: string;
   communityId:string;
   role : 'member' | 'moderator' | 'admin';
   approved_by : string;

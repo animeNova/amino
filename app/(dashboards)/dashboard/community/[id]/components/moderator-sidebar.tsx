@@ -18,13 +18,13 @@ import { Button } from "@/components/ui/button"
 export function ModeratorSidebar() {
   return (
     <Sidebar >
-      <SidebarHeader className="border-b px-6 py-3 bg-background">
+      <SidebarHeader className="border-b px-6 py-3 ">
         <div className="flex items-center gap-2">
           <ShieldAlert className="h-6 w-6 text-primary" />
           <span className="font-bold text-lg">Mod Dashboard</span>
         </div>
       </SidebarHeader>
-      <SidebarContent className="bg-background" >
+      <SidebarContent  >
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive className="">
@@ -68,7 +68,7 @@ export function ModeratorSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="border-t p-4 bg-background">
+      <SidebarFooter className="border-t p-4">
         <div className="flex items-center gap-4">
           <Avatar>
             <AvatarImage src="/placeholder.svg?text=SC" />

@@ -1,10 +1,10 @@
 'use server';
 
 import { db } from "@/db";
-import { isSystemAdmin } from "@/utils/premissons";
+import { isSystemAdmin } from "@/utils/permissions";
 import { getUserId } from "../helpers/get-userId";
 
-export const deleteCommunity = async (communityId: string) => {
+export async function deleteCommunity (communityId: string) {
     try {
         const userId = await getUserId();
         
@@ -19,7 +19,5 @@ export const deleteCommunity = async (communityId: string) => {
         return deletedCommunity;
     } catch (error) {
         console.error('Error deleting communitie:', error);
-        throw new Error('Failed to delete communitie');
     }
-  
 }

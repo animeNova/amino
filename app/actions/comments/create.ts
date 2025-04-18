@@ -4,13 +4,11 @@ import { db } from "@/db";
 import { PostComments } from "@/db/types";
 import { z } from "zod";
 import { getUserId } from "../helpers/get-userId";
+import { createCommentSchema } from "@/schemas/schema";
 
-export const createCommentSchema = z.object({
-      content : z .string().min(1, { message: "Content is required" }),
-      parentId : z.string().optional(),
-  })
 
-  export async function createComment(
+
+export async function createComment(
     postId: string , data : z.infer<typeof createCommentSchema>,
 ): Promise<PostComments> {
   const { content, parentId } = createCommentSchema.parse(data);
@@ -51,7 +49,7 @@ export const createCommentSchema = z.object({
           post_id: postId,
           user_id: userId,
           content,
-          parent_id: parentId || null,
+          parent_id: parentId ?? null,
           depth,
           path,
           is_edited: false,

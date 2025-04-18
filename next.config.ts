@@ -9,8 +9,14 @@ const nextConfig: NextConfig = {
       },
       {
         hostname : 'thumbs.dreamstime.com'
-      }
+      },
+      {
+        hostname : 'sapphire-changing-rodent-630.mypinata.cloud'
+      },
     ]
+  },
+  experimental :{
+    authInterrupts : true
   }
 };
 

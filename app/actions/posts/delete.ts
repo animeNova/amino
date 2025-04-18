@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { auth } from "@/lib/auth";
-import { canDeletePost } from "@/utils/premissons";
+import { canDeletePost } from "@/utils/permissions";
 import { headers } from "next/headers";
 
 export const deletePost = async (postId: string) => {

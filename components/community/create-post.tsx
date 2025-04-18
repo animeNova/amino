@@ -45,7 +45,7 @@ export function CreatePostDialog() {
     setIsSubmitting(true)
     try {
       const blocks = await editor.getBlocks()
-      console.log({
+      ({
         title,
         content: blocks,
         image: selectedImage,

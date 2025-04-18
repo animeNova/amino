@@ -1,12 +1,14 @@
 'use server';
 
 import { db } from "@/db";
-import { canUpdateJoinRequestStatus } from "@/utils/premissons";
+import { canUpdateJoinRequestStatus } from "@/utils/permissions";
 import { z } from "zod";
 import { getUserId } from "../helpers/get-userId";
 
-const updateJoinRequestSchema = z.object({
-    status: z.enum(['accepted', 'rejected']).default('accepted'),
+export const updateJoinRequestSchema = z.object({
+    status: z.enum(['accepted', 'rejected'] , {
+        message : 'Status must be either accepted or rejected'
+    }),
 })
 
 export const UpdateJoinRequest =async (requestId : string,data : z.infer<typeof updateJoinRequestSchema>) => {
@@ -30,6 +32,7 @@ export const UpdateJoinRequest =async (requestId : string,data : z.infer<typeof 
                 approved_by : userId,
                 role : 'member',
             }).executeTakeFirst();  
+            await db.deleteFrom('join_requests').where('id', '=', requestId).executeTakeFirst();
         }
         return joinRequest
     } catch (error) {
