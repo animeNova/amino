@@ -5,6 +5,7 @@ import { isSystemAdmin } from "@/utils/permissions";
 import { z } from "zod";
 import { getUserId } from "../helpers/get-userId";
 import { genreSchema } from "@/schemas/schema";
+import { revalidatePath } from "next/cache";
 
 
 export const CreateGenreAction =async (data : z.infer<typeof genreSchema>) => {
@@ -21,7 +22,8 @@ export const CreateGenreAction =async (data : z.infer<typeof genreSchema>) => {
             description : parsedData.description,
             created_by: userId,
         }).returningAll().executeTakeFirst();
-
+         // Revalidate the genres list page to refresh data
+         revalidatePath('/dashboard/admin/genres');
         return community
     } catch (error) {
         console.error('Error create genre:', error);

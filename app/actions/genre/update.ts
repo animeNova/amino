@@ -5,6 +5,7 @@ import { isSystemAdmin } from "@/utils/permissions";
 import { z } from "zod";
 import { getUserId } from "../helpers/get-userId";
 import { genreSchema } from "@/schemas/schema";
+import { revalidatePath } from "next/cache";
 
 
 
@@ -23,7 +24,8 @@ export const UpdateGenreAction =async (data : z.infer<typeof genreSchema>) => {
             ...rest,
             created_by: userId,
         }).returningAll().executeTakeFirst();
-
+        // Revalidate the genres list page to refresh data
+        revalidatePath('/dashboard/admin/genres');
         return genre
     } catch (error) {
         console.error('Error updating genre:', error);

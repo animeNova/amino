@@ -18,7 +18,7 @@ export interface CommunityResult {
   banner: string;
   created_by: string;
   genre_name: string | null;
-  genre_id: string;
+  genre_id: string | null;
   memberCount: number | string | bigint;
   created_at: Date | null;
 }
@@ -32,16 +32,19 @@ export interface GetCommunitiesResult {
 
 
 export async function getCommunitys(options: GetCommunitiesOptions = {})  {
+    const page = Math.max(options.offset ?? 1, 1);
     const limit = options.limit ?? 10;
-    const offset = options.offset ?? 0;
+    const offset = (page - 1) * limit;
     const genreId = options.genreId ?? null;
     const search = options.search ?? null;
     
     try {
       // Create base query with filters
+      let countQuery = db.selectFrom('genre');
       let baseQuery = db.selectFrom('community')
       .leftJoin('members' , 'community.id' , 'members.communityId')
       .leftJoin('genre', 'genre.id', 'community.genre_id')
+      .leftJoin('user' , 'community.created_by' , 'user.id')
       .groupBy([
         'community.id',
         'community.name',
@@ -50,56 +53,68 @@ export async function getCommunitys(options: GetCommunitiesOptions = {})  {
         'community.language',
         'community.handle',
         'community.banner',
+        'community.created_at',
+        'community.created_by',
         'genre.name',
         'genre.id',
-        'members.id'
+        'members.id' ,
+        'user.id' ,
+        'user.name'
       ])
       .select([
-        'community.id as id',  // Remove possibility of null
-        'community.name as name',  // Remove possibility of null
+        'community.id as id',
+        'community.name as name',
         'community.description',
         'community.image',
         'community.language',
         'community.handle',
         'community.banner',
-        'community.created_by',
+        eb => eb.case()
+          .when(eb.ref('user.name'), 'is not', null)
+          .then(eb.ref('user.name'))
+          .else('Unknown User')
+          .end()
+          .as('created_by'),
         'genre.name as genre_name',
         'genre.id as genre_id',
         eb => eb.fn.count('members.communityId').as('memberCount')
       ])
       .where('community.id', 'is not', null)  // Ensure no null IDs
       .where('community.name', 'is not', null)  // Ensure no null names
-      .where('genre_id', '=', genreId);
+      .where('community.created_by', 'is not', null)  // Specify the table name to avoid ambiguity
       
       // Check if search term is provided and filter accordingly
       if (search) {
         baseQuery = baseQuery.where(eb => 
             eb.or([
-                eb('name' , 'like' , `%${search}%`),
-                eb('description' , 'like' , `%${search}%`),
+                eb('community.name' , 'ilike' , `%${search}%`),
+                eb('community.description' , 'ilike' , `%${search}%`),
             ])
         );
       }
+
+      if(genreId){
+        baseQuery = baseQuery.where('genre.id', '=', genreId);
+      }
       
-      // Create count query based on the same conditions
-      const countResult = await baseQuery
-      .select(eb => eb.fn.count('community.id').as('count'))
-      .executeTakeFirst();
+      const countResult = await countQuery
+        .select(eb => eb.fn.count<number>('id').as('count'))
+        .executeTakeFirst();
       
-        
-      const totalCount = Number(countResult?.count ?? 0);
+        const totalCount = Number(countResult?.count ?? 0);
       
       // Apply pagination to the main query
       const communities = await baseQuery
         .limit(limit)
         .offset(offset)
-        .selectAll()
         .execute();
-        
+      const totalPages = Math.ceil(communities.length / limit); // Calculate total pages
+
       return {
         communities,
         totalCount,
-        hasMore: offset + communities.length < totalCount
+        hasMore: offset + communities.length < totalCount,
+        totalPages
       };
     } catch (error) {
       console.error('Error fetching communities:', error);
@@ -108,18 +123,36 @@ export async function getCommunitys(options: GetCommunitiesOptions = {})  {
 }
   
 
-export async function getCommunityById(id: string): Promise<Community | null> {
+export async function getCommunityById(id: string): Promise<Community> {
     try {
       const community = await db
         .selectFrom('community')
         .where('id', '=', id)
         .selectAll()
         .executeTakeFirst();
-      
-      return community || null;
+      if(!community){
+        throw new Error('Community not found');
+      }
+      return community;
     } catch (error) {
       console.error(`Error fetching community ${id}:`, error);
       throw new Error('Failed to fetch community');
     }
 }
-  
+
+export async function getCommunityByHandle(handle: string): Promise<Community> {
+  try {
+    const community = await db
+      .selectFrom('community')
+      .where('handle', '=', handle)
+      .selectAll()
+      .executeTakeFirst();
+    if(!community){
+      throw new Error('Community not found');
+    }
+    return community;
+  } catch (error) {
+    console.error(`Error fetching community ${handle}:`, error);
+    throw new Error('Failed to fetch community');
+  }
+}

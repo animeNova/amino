@@ -13,7 +13,7 @@ import Image from 'next/image';
 import { LogOutIcon, Settings, User } from 'lucide-react';
 import { LuLayoutDashboard } from "react-icons/lu";
 
-import { signOut } from '@/lib/auth/clinet';
+import { signOut } from '@/lib/auth/client';
 import { useRouter } from 'next/navigation';
 interface UserButtonProps {
     id : string;
@@ -31,9 +31,9 @@ const UserButton : React.FC<UserButtonProps> = ({
   const router = useRouter()
   return (
     <DropdownMenu>
-       <DropdownMenuTrigger>
-        <Avatar>
-          <Image src={image || '/images/unknown.jpg'} width={100} height={100} alt={name} className='rounded-full object-cover' />
+       <DropdownMenuTrigger className='pt-2'>
+        <Avatar >
+          <Image src={image ?? '/images/unknown.jpg'} width={100} height={100} alt={name} className='rounded-full object-cover' />
           </Avatar>
        </DropdownMenuTrigger>
        <DropdownMenuContent>
@@ -45,7 +45,7 @@ const UserButton : React.FC<UserButtonProps> = ({
         </DropdownMenuItem>
         {
           role != 'user' && (
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => router.push('dashboard/admin')}>
             <LuLayoutDashboard />
             Dashboard
           </DropdownMenuItem>
@@ -56,7 +56,10 @@ const UserButton : React.FC<UserButtonProps> = ({
           <Settings className='hover:rotate-[30deg] transition-transform' />
           Setting
           </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => signOut()}>
+        <DropdownMenuItem onClick={() => {
+          signOut()
+          router.refresh();
+        }}>
           <LogOutIcon color='#E50046' />
           Logout
           </DropdownMenuItem>

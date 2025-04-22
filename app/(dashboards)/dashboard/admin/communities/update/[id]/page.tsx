@@ -1,12 +1,14 @@
 'use client';
 import { useParams, useRouter } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import { useCommunitys } from "@/hooks/actions/communitys/useCommunitys"
-import React from "react"
+import React, { useEffect, useState, useTransition } from "react"
 import { CommunityForm } from "../../../components/forms/community-form"
+import { toast } from "@/hooks/use-toast";
+import { Community } from "@/db/types";
+import { getCommunityById } from "@/app/actions/community/get";
+import { UpdateCommunityAction } from "@/app/actions/community/update";
 
 
 
@@ -14,7 +16,37 @@ export default function CreateCommunityPage(){
   const router = useRouter()
   const params = useParams();
   const id = params.id as string;
-  const {updateCommunity,isUpdating} = useCommunitys()
+  const [isPending, startTransition] = useTransition();
+  const [communityQuery, setCommunityQuery] = useState<Community>();
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchGenre = async () => {
+      try {
+        const data = await getCommunityById(id);
+        setCommunityQuery(data);
+      } catch (err) {
+        setError("Failed to load Community data");
+        toast({
+          title: "Error",
+          description: "Failed to load Community data",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchGenre();
+  }, [id, toast]);
+
+  if (isLoading) {
+    return <div className="flex-1 flex items-center justify-center"><p>Loading Community data...</p></div>;
+  }
+  if(error){
+    toast({title:"error", description:error});
+  }
   return (
         <div className="flex-1">
           <div className="border-b">
@@ -35,26 +67,40 @@ export default function CreateCommunityPage(){
             <Separator />
             <CommunityForm
               onSubmit={(data) => {
-                ("Community created:", data)
-                updateCommunity(data)
-                // // In a real app, you would create the community and then redirect
-                setTimeout(() => {
-                  router.push("dashboard/admin/communities")
-                }, 1000)
+                setError(null);
+                startTransition(async () => {
+                  try {
+                    await UpdateCommunityAction({
+                      id: id,
+                      name: data.name,
+                      description: data.description,
+                      image: data.image,
+                      banner: data.banner,
+                      visibility: data.visibility,
+                      genre_id: data.genre_id,
+                      handle:data.handle,
+                      language:data.language,
+                    });
+                    toast({title:"success" , description:"Community updated successfully"});
+                    router.push("/dashboard/admin/communities");
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : "Failed to update community");
+                    toast({title:"error" , description:"Failed to updated community"});                  
+                  }
+                });
               }}
               isEditMode={true}
               initialData={{
-              name : "test",
-              description : "test",
-              image : "https://sapphire-changing-rodent-630.mypinata.cloud/ipfs/bafkreihlywkqmqntzb7yj2oc3hsgqvzbrbmncko7bdca744zawy22ychky",
-              genre_id : "tech",
-              banner : "https://sapphire-changing-rodent-630.mypinata.cloud/ipfs/bafkreihlywkqmqntzb7yj2oc3hsgqvzbrbmncko7bdca744zawy22ychky",
-              handle: "test",
-              id : id,
-              language:"ar"  ,
-              visibility : 'private'        
+                name: communityQuery?.name,
+                description: communityQuery?.description,
+                image: communityQuery?.image,
+                banner: communityQuery?.banner,
+                visibility: communityQuery?.visibility,
+                genre_id: communityQuery?.genre_id,
+                handle:communityQuery?.handle,
+                language:communityQuery?.language,
               }}
-              isLoading={isUpdating}
+              isLoading={isPending}
             />
           </div>
         </div>

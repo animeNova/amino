@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { BarChart3, Flag, Globe, Home, MessageSquare, Settings, Shield, Users } from "lucide-react"
+import {Shield} from "lucide-react"
 
 import {
   Sidebar,
@@ -12,18 +12,20 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
+
 import { Badge } from "@/components/ui/badge"
 import { AdminSideBarLinks } from "@/constants/admin-sidebar-links"
 import { cn } from "@/lib/utils"
 import { usePathname } from "next/navigation"
+import { useSession } from "@/lib/auth/client"
+import UserAvatar from "@/components/ui/user-avatar"
 
 
 export function AdminSidebar() {
+  const {data} = useSession()
   const path = usePathname()
   return (
-    <Sidebar >
+    <Sidebar className="overflow-hidden" >
       <SidebarHeader className="border-b px-6 py-3">
         <div className="flex items-center gap-2">
           <Shield className="h-6 w-6 text-primary" />
@@ -52,19 +54,13 @@ export function AdminSidebar() {
     
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="border-t p-4">
-        <div className="flex items-center gap-4">
-          <Avatar>
-            <AvatarImage src="/images/unknown.jpg" />
-            <AvatarFallback>SA</AvatarFallback>
-          </Avatar>
+      <SidebarFooter className="border-t">
+        <div className="flex items-center gap-2">
+          <UserAvatar url={data?.user.image} />
           <div className="flex flex-col">
-            <span className="text-sm font-medium">System Admin</span>
-            <span className="text-xs text-muted-foreground">Super Admin</span>
+            <span className="text-[.8rem] font-medium">{data?.user.name}</span>
+            <span className="text-xs text-muted-foreground">{data?.user.role}</span>
           </div>
-          <Button variant="ghost" size="icon" className="ml-auto">
-            <Settings className="h-4 w-4" />
-          </Button>
         </div>
       </SidebarFooter>
     </Sidebar>

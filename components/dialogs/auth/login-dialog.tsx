@@ -23,7 +23,7 @@ import {
 import useLoginDialogStore from '@/store/useLoginDialog'
 import { ArrowRight, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { signIn } from '@/lib/auth/clinet';
+import { signIn } from '@/lib/auth/client';
 import { toast } from 'sonner';
 import { MdErrorOutline } from "react-icons/md";
 import { CiCircleInfo } from "react-icons/ci";

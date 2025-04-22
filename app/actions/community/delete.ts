@@ -3,6 +3,7 @@
 import { db } from "@/db";
 import { isSystemAdmin } from "@/utils/permissions";
 import { getUserId } from "../helpers/get-userId";
+import { revalidatePath } from "next/cache";
 
 export async function deleteCommunity (communityId: string) {
     try {
@@ -16,6 +17,7 @@ export async function deleteCommunity (communityId: string) {
         if (!deletedCommunity) {
             throw new Error("Community not found or already deleted.");
         }
+        revalidatePath('/dashboard/admin/communities');
         return deletedCommunity;
     } catch (error) {
         console.error('Error deleting communitie:', error);

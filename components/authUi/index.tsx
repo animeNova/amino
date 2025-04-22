@@ -1,4 +1,4 @@
-import { useSession } from '@/lib/auth/clinet';
+import { useSession } from '@/lib/auth/client';
 import React from 'react'
 import UserButton from './UserButton';
 import AuthButtons from './AuthButton';

@@ -29,7 +29,7 @@ interface UsersTable extends BaseEntity {
   name: string;
   emailVerified:boolean;
   image?:string;
-  role : 'user' | 'admin' | 'superadmin';
+  role : 'user' | 'admin' | 'owner';
 }
 
 interface SessionTable extends BaseEntity {
@@ -100,6 +100,7 @@ export interface CommuityTable {
   banner : string;
   created_by : string;
   genre_id : string;
+  created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, never>;
 }
 export interface JoinRequestTable {
@@ -170,7 +171,8 @@ export interface CommentLikesTable {
 }
 
 
-
+export type User = Selectable<UsersTable>;
+export type UserUpdate = Updateable<UsersTable>;
 
 export type UserActivity = Selectable<UserActivitiesTable>;
 export type NewUserActivity = Insertable<UserActivitiesTable>;

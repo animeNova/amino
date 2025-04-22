@@ -1,30 +1,18 @@
-"use client"
-
+'use client';
 import { useRouter } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { GenreForm } from "../../components/forms/genre-form"
-import { useGenres } from "@/hooks/actions/genres/useGenres"
-import { useToast } from "@/hooks/use-toast"
-import { useEffect } from "react"
+import { CreateGenreAction } from "@/app/actions/genre/create";
+import { useTransition, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function CreateGenrePage() {
   const router = useRouter()
-  const { createGenre, isCreating, isError, error } = useGenres()
-  const { toast } = useToast()
-
-  // Handle error state
-  useEffect(() => {
-    if (isError && error) {
-      toast({
-        title: "Error creating genre",
-        description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
-      })
-    }
-  }, [isError, error, toast])
-
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
   return (
         <div className="flex-1">
           <div className="border-b">
@@ -43,16 +31,22 @@ export default function CreateGenrePage() {
               </p>
             </div>
             <Separator />
+            {error && <div className="bg-destructive/15 text-destructive p-3 rounded-md">{error}</div>}
             <GenreForm
               onSubmit={(data) => {
-                createGenre(data)
-                // // In a real app, you would create the community and then redirect
-                setTimeout(() => {
-                  router.push("/dashboard/admin/genres")
-                }, 1000)
+                setError(null);
+                startTransition(async () => {
+                  try {
+                    await CreateGenreAction(data);
+                    toast({title:"success" , description:"Community created successfully"});
+                    router.push("/dashboard/admin/genres");
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : "Failed to create community");
+                    toast({title:"error" , description:"Failed to create community"});                  }
+                });
               }}
               isEditMode={false}
-              isLoading={isCreating}
+              isLoading={isPending}
             />
           </div>
         </div>

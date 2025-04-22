@@ -3,13 +3,22 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import ShareButtons from "./share-buttons"
 import RelatedPosts from "./related-posts"
 import CommentSection from "./comment-section"
 import Container from "@/components/ui/container"
+import ShareDialog from "./share-dialog"
+import { headers } from "next/headers"
 
 
-export default function PostPage() {
+export default async function PostPage() {
+    // Get the host from headers
+    const headersList =await headers();
+    const host = headersList.get("host") ?? "localhost:3000";
+    const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
+    const baseUrl = `${protocol}://${host}`;
+    
+    // Construct the full post URL
+    const postUrl = `${baseUrl}/post/evolution-of-anime`;
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation Bar */}
@@ -20,10 +29,10 @@ export default function PostPage() {
             Back to Feed
           </Button>
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm">
-              <Share2 className="mr-2 h-4 w-4" />
-              Share
-            </Button>
+            <ShareDialog
+                postTitle="The Evolution of Anime: From Astro Boy to Modern Masterpieces"
+                postUrl={postUrl}
+              />
             <Button variant="ghost" size="sm">
               <Bookmark className="mr-2 h-4 w-4" />
               Save
@@ -97,10 +106,10 @@ export default function PostPage() {
               <MessageCircle className="h-5 w-5" />
               <span>234 Comments</span>
             </Button>
-            <Button variant="ghost" size="sm" className="gap-2">
-              <Share2 className="h-5 w-5" />
-              <span>Share</span>
-            </Button>
+            <ShareDialog
+                postTitle="The Evolution of Anime: From Astro Boy to Modern Masterpieces"
+                postUrl={postUrl}
+              />
           </div>
 
           {/* Post Content */}
@@ -141,9 +150,6 @@ export default function PostPage() {
               worldwide.
             </p>
           </article>
-
-          {/* Share Section */}
-          <ShareButtons />
 
           {/* Author Bio */}
           <div className="rounded-lg border p-6 mt-8">

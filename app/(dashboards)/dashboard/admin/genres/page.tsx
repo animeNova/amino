@@ -1,32 +1,30 @@
-"use client"
-
-import { useState } from "react"
-import { ChevronDown, Filter, Globe, Plus, Search, Settings } from "lucide-react"
+import { Globe, Plus,Settings } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import { useGenres } from "@/hooks/actions/genres/useGenres"
 import { DataTable } from "@/components/data-table"
 import { columns } from "./components/columns"
-import CreativeLoadingScreen from "@/components/ui/loading"
-import { useRouter } from "next/navigation"
-
-export default function GenresPage() {
-  const {results , isLoading } = useGenres()
-  const [selectedGenres, setselectedGenres] = useState<string[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const router = useRouter()
-  if (isLoading) {
-    return <CreativeLoadingScreen  />
-  }
+import { getGenres } from "@/app/actions/genre/get"
+import SearchComponent from "../../../../../components/search"
+import PaginationButtons from "@/components/ui/pagination-buttons"
+import Link from "next/link"
+interface SearchParams {
+  search?: string;
+  page ?: number;
+}
+export default async function GenresPage({
+  searchParams,
+}: {
+  searchParams: SearchParams;
+}) {
+  const SearchParams = await searchParams;
+  const page = SearchParams.page ?? 1;
+  const search = SearchParams.search ?? "";
+  const {genres,totalCount,totalPages} = await getGenres({
+    search: search,
+    offset: page
+  })
+  
   return (
 
 
@@ -35,10 +33,12 @@ export default function GenresPage() {
             <div className="flex h-16 items-center px-4">
               <h1 className="text-lg font-semibold">Genre Management</h1>
               <div className="ml-auto flex items-center space-x-4">
-                <Button onClick={() => router.push('genres/create')}>
+                <Link href={'genres/create'}>
+                <Button>
                   <Plus className="mr-2 h-4 w-4" />
                   Create Genre
                 </Button>
+                </Link>
               </div>
             </div>
           </div>
@@ -60,7 +60,7 @@ export default function GenresPage() {
                   <Globe className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{results?.genres.length}</div>
+                  <div className="text-2xl font-bold">{totalCount}</div>
                   <p className="text-xs text-muted-foreground">+124 from last month</p>
                 </CardContent>
               </Card>
@@ -70,46 +70,25 @@ export default function GenresPage() {
               <Card>
                 <div className="p-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                   <div className="flex flex-col gap-4 md:flex-row md:items-center">
-                    <div className="relative">
-                      <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder="Search communities..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full md:w-80 pl-8"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {selectedGenres.length > 0 && (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="outline">
-                            Bulk Actions <ChevronDown className="ml-2 h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Feature Communities</DropdownMenuItem>
-                          <DropdownMenuItem>Export Data</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600">Archive Communities</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                    <Button variant="outline" size="icon">
-                      <Filter className="h-4 w-4" />
-                    </Button>
+                      <SearchComponent paramName="search" defaultValue={search} />
                   </div>
                 </div>
               </Card>
 
               <Card>
                   <div>
-                  <DataTable columns={columns} data={results?.genres!} currentPage={0} hasNextPage={results?.hasMore!} totalPages={results?.totalCount!} />
+                  <DataTable columns={columns} data={genres}  />
                   </div>
+                  <div className="flex items-center justify-between p-4">
+                  <div className="text-sm text-muted-foreground">
+                    Showing <strong>{genres.length}</strong> of <strong>{totalCount}</strong>{" "}
+                    communities
+                  </div>
+                </div>
               </Card>
             </div>
           </div>
+          <PaginationButtons currentPage={page ?? 0} totalPages={totalPages} />
         </div>
   )
 }

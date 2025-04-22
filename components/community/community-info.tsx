@@ -1,14 +1,13 @@
-'use client';
-import { Bell, MoreHorizontal, Share2, Users, MessageCircle } from "lucide-react"
+import { Bell, MoreHorizontal, Share2, Users, MessageCircle, SquareChartGantt } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { useSession } from "@/lib/auth/clinet";
 import { CreatePostDialog } from "./create-post";
-
+import Link from "next/link"
 interface CommunityInfoProps {
   community: {
+    id : string;
     name: string
     handle: string
     description: string
@@ -19,11 +18,12 @@ interface CommunityInfoProps {
       role: string
       avatar: string
     }[]
-  }
+  },
+  isMember : boolean;
+  canManage : boolean;
 }
 
-export function CommunityInfo({ community }: CommunityInfoProps) {
-  const {data} = useSession()
+export function CommunityInfo({ community , isMember , canManage}: CommunityInfoProps) {
   return (
     <Card>
       <CardHeader className="relative pb-0">
@@ -50,12 +50,19 @@ export function CommunityInfo({ community }: CommunityInfoProps) {
         </div>
         <div className="flex gap-2">
           {
-            data?.user ? (
+            isMember ? (
               <CreatePostDialog />
-
             ) : (
               <Button className="flex-1">Join Community</Button>
-
+            )
+          }
+          {
+            canManage && (
+              <Link href={`/dashboard/community/${community.id}`}>
+              <Button variant="outline" size="icon">
+                <SquareChartGantt className="h-4 w-4" />
+              </Button>
+              </Link>
             )
           }
             <Button variant="outline" size="icon">

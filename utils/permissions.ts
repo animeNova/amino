@@ -102,11 +102,27 @@ export async function isCommentAuthor(userId: string, commentId: string): Promis
  * Check if a user is a moderator or admin of a community
  */
 export async function isCommunityModerator(userId: string, communityId: string): Promise<boolean> {
+  const isAdmin = await isSystemAdmin(userId);
+  if (isAdmin) return true;
   const member = await db
     .selectFrom('members')
     .where('user_Id', '=', userId)
     .where('communityId', '=', communityId)
     .where('role', 'in', ['moderator', 'admin'])
+    .select('id')
+    .executeTakeFirst();
+    
+  return !!member;
+}
+
+/**
+ * Check if a user is a member of a community
+ */
+export async function isCommunityMember(userId: string, communityId: string): Promise<boolean> {
+  const member = await db
+    .selectFrom('members')
+    .where('user_Id', '=', userId)
+    .where('communityId', '=', communityId)
     .select('id')
     .executeTakeFirst();
     
@@ -120,7 +136,7 @@ export async function isSystemAdmin(userId: string): Promise<boolean> {
   const user = await db
     .selectFrom('user')
     .where('id', '=', userId)
-    .where('role', 'in', ['admin', 'superadmin'])
+    .where('role', 'in', ['admin', 'owner'])
     .select('id')
     .executeTakeFirst();
     

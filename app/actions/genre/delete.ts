@@ -3,6 +3,7 @@
 import { db } from "@/db";
 import { isSystemAdmin } from "@/utils/permissions";
 import { getUserId } from "../helpers/get-userId";
+import { revalidatePath } from "next/cache";
 
 export const deleteGenre = async (genreId: string) => {
     try {
@@ -16,6 +17,8 @@ export const deleteGenre = async (genreId: string) => {
         if (!deletedGenre) {
             throw new Error("Genre not found or already deleted.");
         }
+        // Revalidate the genres list page to refresh data
+        revalidatePath('/dashboard/admin/genres');
         return true;
     } catch (error) {
         console.error('Error deleting genre:', error);

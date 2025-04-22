@@ -6,6 +6,7 @@ import { Genre } from "@/db/types";
 export interface GetGenresOptions {
     limit?: number;
     offset?: number;
+    search?: string;
 }
 
 export interface GenreResult {
@@ -20,11 +21,16 @@ export interface GetGenresResult {
     genres: GenreResult[];
     totalCount: number;
     hasMore: boolean;
+    totalPages: number;
 }
 
 export const getGenres = async (options: GetGenresOptions = {}): Promise<GetGenresResult> => {
+    // Ensure page is at least 1, then calculate offset
+    const page = Math.max(options.offset ?? 1, 1);
     const limit = options.limit ?? 10;
-    const offset = options.offset ?? 0;
+    const offset = (page - 1) * limit;
+    const search = options.search ?? null;
+    
     try {
         let countQuery = db.selectFrom('genre');
         let query = db.selectFrom('genre')
@@ -37,6 +43,11 @@ export const getGenres = async (options: GetGenresOptions = {}): Promise<GetGenr
             'user.name as created_by'
         ]);
         
+        // Apply search filter to both queries
+        if (search) {
+            query = query.where('genre.name', 'ilike', `%${search}%`);
+        }
+        
         const countResult = await countQuery
         .select(eb => eb.fn.count<number>('id').as('count'))
         .executeTakeFirst();
@@ -48,11 +59,13 @@ export const getGenres = async (options: GetGenresOptions = {}): Promise<GetGenr
     
         // Execute the main query
         const genres = await query.execute();
-        
+        const totalPages = Math.ceil(genres.length / limit); // Calculate total pages
+
         return {
             genres,
             totalCount,
             hasMore: offset + genres.length < totalCount,
+            totalPages
         };
     } catch (error) {
         console.error('Error fetching genres:', error);
@@ -60,13 +73,16 @@ export const getGenres = async (options: GetGenresOptions = {}): Promise<GetGenr
     }
 }
 
-export const getGenreById = async (id: string): Promise<Genre | null | undefined> => {
+export const getGenreById = async (id: string): Promise<Genre> => {
     try {
         const genre = await db
             .selectFrom('genre')
             .where('id', '=', id)
             .selectAll()
             .executeTakeFirst();
+        if (!genre) {
+            throw new Error('Genre not found');
+        }
         return genre;
     } catch (error) {
         console.error('Error fetching genre by ID:', error);

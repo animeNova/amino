@@ -1,16 +1,21 @@
 "use client"
-
 import { useRouter } from "next/navigation"
 import { ArrowLeft } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { CommunityForm } from "../../components/forms/community-form"
-import { useCommunitys } from "@/hooks/actions/communitys/useCommunitys"
+import { CreateCommunityAction } from "@/app/actions/community/create"
+import { toast } from "@/hooks/use-toast"
+import { useState, useTransition } from "react"
 
 export default function CreateCommunityPage() {
   const router = useRouter()
-  const {createCommunity,isCreating} = useCommunitys()
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  if(error){
+    toast({title:"error", description:error});
+  }
   return (
         <div className="flex-1">
           <div className="border-b">
@@ -31,13 +36,19 @@ export default function CreateCommunityPage() {
             <Separator />
             <CommunityForm
               onSubmit={(data) => {
-                createCommunity(data)
-                setTimeout(() => {
-                  router.push("/admin/communities")
-                }, 1000)
+                setError(null);
+                startTransition(async () => {
+                  try {
+                    await CreateCommunityAction(data)
+                    toast({title:"success" , description:"Community created successfully"});
+                    router.push("/dashboard/admin/communities");
+                  } catch (err) {
+                    setError(err instanceof Error ? err.message : "Failed to create community");
+                    toast({title:"error" , description:"Failed to create community"});                  }
+                });
               }}
               isEditMode={false}
-              isLoading={isCreating}
+              isLoading={isPending}
             />
           </div>
         </div>

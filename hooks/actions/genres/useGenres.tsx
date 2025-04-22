@@ -24,7 +24,8 @@ export function useGenres(options: UseGenresOptions = {}) {
   const genresQuery = useQuery({
     queryKey: ['genres', filterOptions],
     queryFn: () => getGenres(filterOptions),
-    staleTime: 0 // Consider data stale immediately
+    staleTime: 0 ,// Consider data stale immediately
+    refetchOnMount: true,
   });
 
   //  Query a single post by ID

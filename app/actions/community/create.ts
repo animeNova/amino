@@ -5,9 +5,7 @@ import { isSystemAdmin } from "@/utils/permissions";
 import { z } from "zod";
 import { getUserId } from "../helpers/get-userId";
 import { communitySchema } from "@/schemas/schema";
-
-
-
+import { revalidatePath } from "next/cache";
 
 export async function CreateCommunityAction(data : z.infer<typeof communitySchema>) {
     try {
@@ -22,6 +20,8 @@ export async function CreateCommunityAction(data : z.infer<typeof communitySchem
             ...parsedData,
             created_by: userId,
         }).executeTakeFirst();
+             // Revalidate the genres list page to refresh data
+        revalidatePath('/dashboard/admin/communities');
         return community;
     } catch (error) {
         console.error('Error create communitie:', error);

@@ -4,17 +4,20 @@ import { DropdownMenu ,DropdownMenuContent,DropdownMenuItem,DropdownMenuLabel,Dr
 import { Button } from "@/components/ui/button";
 import {Copy, Edit, MoreHorizontal, Trash} from 'lucide-react'
 import {useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { GenreResult } from "@/app/actions/genre/get";
 import { useToast } from "@/hooks/use-toast";
 import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal"
 import { useGenres } from "@/hooks/actions/genres/useGenres";
+import { deleteGenre } from "@/app/actions/genre/delete";
 
 interface CellActionProps {
     data : GenreResult;
 }
 export const CellAction : React.FC<CellActionProps> = ({data}) => {
-    const {deleteGenre, isDeleting} = useGenres()
+    const [isPending, startTransition] = useTransition();
+    const [error, setError] = useState<string | null>(null);
+
     const [open, setOpen] = useState<boolean>(false)
     const {toast} = useToast();
     const router = useRouter()
@@ -29,22 +32,27 @@ export const CellAction : React.FC<CellActionProps> = ({data}) => {
     }
     
     const handleDelete = () => {
-        try {
-            deleteGenre(data.id);
-            toast({
-                title: "Genre deleted",
-                description: "The genre has been successfully deleted.",
-                variant: "default"
-            });
-            setOpen(false);
-        } catch (error) {
-            toast({
+            setError(null);
+            startTransition(async () => {
+            try {
+                await deleteGenre(data.id);
+                toast({
+                title: "Success",
+                description: "Genre updated successfully",
+                });
+                setOpen(false)
+            } catch (err) {
+                setError(err instanceof Error ? err.message : "Failed to update genre");
+                toast({
                 title: "Error",
-                description: "Failed to delete the genre. Please try again.",
-                variant: "destructive"
+                description: "Failed to update genre",
+                variant: "destructive",
+                });
+            }
             });
-            (`Exception while doing something: ${error}`);
-        }
+    }
+    if (error) {
+        return <div className="flex-1 flex items-center justify-center"><p>Error loading genre: {error}</p></div>;
     }
    
     return (
@@ -82,7 +90,7 @@ export const CellAction : React.FC<CellActionProps> = ({data}) => {
           onOpenChange={setOpen}
           onConfirm={handleDelete}
           title="Delete Genre"
-          isDeleting={isDeleting}
+          isDeleting={isPending}
           description="Are you sure you want to delete this genre?"
         />
         </>

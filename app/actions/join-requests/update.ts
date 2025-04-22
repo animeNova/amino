@@ -28,7 +28,7 @@ export const UpdateJoinRequest =async (requestId : string,data : z.infer<typeof 
         if(joinRequest && joinRequest.status === 'accepted'){
             await db.insertInto('members').values({
                 communityId : joinRequest.community_id,
-                user_id: joinRequest.user_id,
+                user_Id: joinRequest.user_id,
                 approved_by : userId,
                 role : 'member',
             }).executeTakeFirst();  
