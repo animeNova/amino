@@ -40,48 +40,36 @@ export async function getCommunitys(options: GetCommunitiesOptions = {})  {
     
     try {
       // Create base query with filters
-      let countQuery = db.selectFrom('genre');
+      let countQuery = db.selectFrom('community');
       let baseQuery = db.selectFrom('community')
-      .leftJoin('members' , 'community.id' , 'members.communityId')
-      .leftJoin('genre', 'genre.id', 'community.genre_id')
-      .leftJoin('user' , 'community.created_by' , 'user.id')
-      .groupBy([
-        'community.id',
-        'community.name',
-        'community.description',
-        'community.image',
-        'community.language',
-        'community.handle',
-        'community.banner',
-        'community.created_at',
-        'community.created_by',
-        'genre.name',
-        'genre.id',
-        'members.id' ,
-        'user.id' ,
-        'user.name'
-      ])
-      .select([
-        'community.id as id',
-        'community.name as name',
-        'community.description',
-        'community.image',
-        'community.language',
-        'community.handle',
-        'community.banner',
-        eb => eb.case()
-          .when(eb.ref('user.name'), 'is not', null)
-          .then(eb.ref('user.name'))
-          .else('Unknown User')
-          .end()
-          .as('created_by'),
-        'genre.name as genre_name',
-        'genre.id as genre_id',
-        eb => eb.fn.count('members.communityId').as('memberCount')
-      ])
-      .where('community.id', 'is not', null)  // Ensure no null IDs
-      .where('community.name', 'is not', null)  // Ensure no null names
-      .where('community.created_by', 'is not', null)  // Specify the table name to avoid ambiguity
+        .leftJoin('genre', 'genre.id', 'community.genre_id')
+        .leftJoin('user', 'community.created_by', 'user.id')
+        .select([
+          'community.id as id',
+          'community.name as name',
+          'community.description',
+          'community.image',
+          'community.language',
+          'community.handle',
+          'community.banner',
+          'community.created_at',
+          eb => eb.case()
+            .when(eb.ref('user.name'), 'is not', null)
+            .then(eb.ref('user.name'))
+            .else('Unknown User')
+            .end()
+            .as('created_by'),
+          'genre.name as genre_name',
+          'genre.id as genre_id',
+          // Use a subquery to count members instead of a join
+          eb => eb.selectFrom('members')
+            .whereRef('members.communityId', '=', 'community.id')
+            .select(eb => eb.fn.count('id').as('count'))
+            .as('memberCount')
+        ])
+        .where('community.id', 'is not', null)  // Ensure no null IDs
+        .where('community.name', 'is not', null)  // Ensure no null names
+        .where('community.created_by', 'is not', null)  // Specify the table name to avoid ambiguity
       
       // Check if search term is provided and filter accordingly
       if (search) {

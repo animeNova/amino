@@ -6,12 +6,13 @@ import { ChatRooms } from "@/components/community/chat-rooms"
 import { CommunityInfo } from "@/components/community/community-info"
 import { CommunityRules } from "@/components/community/community-rules"
 import { PinnedPosts } from "@/components/community/pinned-posts"
-import AnimePostCard from "@/components/ui/posts/post"
+import AnimePostCard from "@/components/posts/postCard"
 import Container from "@/components/ui/container"
-import { getUserId } from "@/app/actions/helpers/get-userId"
 import { isCommunityMember, isCommunityModerator } from "@/utils/permissions"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
+import { getPostsByCommunity } from "@/app/actions/posts/get"
+import PostList from "../posts/post-list"
 interface CommunityPageProps {
     community: {
         id: string;
@@ -34,6 +35,7 @@ export default async function CommunityPage({community} :Readonly<CommunityPageP
     })
     const isMember = await isCommunityMember(user?.user.id!,community.id)
     const canManage = await isCommunityModerator(user?.user.id!,community.id)
+    const {posts} = await getPostsByCommunity(community.id)
   return (
     <div className="min-h-screen bg-background">
      <Container>
@@ -88,31 +90,9 @@ export default async function CommunityPage({community} :Readonly<CommunityPageP
               </Tabs>
             </CardContent>
           </Card>
-          <ScrollArea className="h-[calc(100vh-5rem)]">
-            <div className="space-y-4">
-              {posts.map((post) => (
-                <AnimePostCard key={post.id} 
-                author={{
-                    name: "SakuraChan",
-                    avatar: "/placeholder.svg?height=40&width=40",
-                    level: 42,
-                  }}
-                  post={{
-                    title: "Why Chainsaw Man is a Masterpiece!",
-                    excerpt:
-                      "Just finished binge-watching Chainsaw Man and I need to share my thoughts! The animation quality and story development are absolutely incredible. MAPPA has outdone themselves with the fight scenes...",
-                    publishDate: "2 hours ago",
-                  }}
-                  genres={["Shounen", "Action", "Supernatural"]}
-                  stats={{
-                    likes: 124,
-                    comments: 32,
-                    shares: 8,
-                  }}
-                />
-              ))}
-            </div>
-          </ScrollArea>
+        <ScrollArea className="h-[calc(100vh-5rem)]">
+          <PostList posts={posts} />
+        </ScrollArea>
         </div>
 
         {/* Right Sidebar - Chat Rooms */}

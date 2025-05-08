@@ -1,5 +1,6 @@
 // File: utils/permissions.ts
 
+import { hasUserRequestedToJoin } from "@/app/actions/join-requests/get";
 import { db } from "@/db";
 
 /**
@@ -35,7 +36,7 @@ export async function canCreatePost(userId: string, communityId: string): Promis
   const community = await db
     .selectFrom('community')
     .where('id', '=', communityId)
-    .select(['visibility'])
+    .select('community.id')
     .executeTakeFirst();
     
   if (!community) return false;
@@ -268,33 +269,13 @@ export async function getCommentPermissions(userId: string | null, commentId: st
  * Get permissions for a user to Request Join a community
  */
 export async function canRequestJoin(userId: string, communityId: string): Promise<boolean> {
-  // Check if the user is already a member of the community
-  const membership = await db
-    .selectFrom('members')
-    .where('user_Id', '=', userId)
-    .where('communityId', '=', communityId)
-    .select('id')
-    .executeTakeFirst();
-    
-  if (membership) return false;
-  
-  // Check if the community is request-only
-  const community = await db
-    .selectFrom('community')
-    .where('id', '=', communityId)
-    .select(['visibility'])
-    .executeTakeFirst();
-    
-  if(community?.visibility !== 'private') return false;
+  // Check if the user is already a member
+  const isMember = await isCommunityMember(userId, communityId);
+  if (isMember) return false;
 
-  // Check if the user has already requested to join
-  const request = await db.selectFrom('join_requests')
-    .where('user_id', '=', userId)
-    .where('community_id', '=', communityId)
-    .where('status', '=', 'pending')
-    .select('id')
-    .executeTakeFirst();
-  if(request) return false;
+  // Check if the user has already sent a request
+  const existingRequest = await hasUserRequestedToJoin(communityId);
+  if (existingRequest) return false;
   return true;
 }
 
@@ -339,4 +320,29 @@ export async function canGetJoinRequests(userId: string, communityId: string): P
   const isModerator = await isCommunityModerator(userId, communityId);
   if (isModerator) return true
   return false;
+}
+
+/**
+ * Check if a user can change another member's role in a community
+ * - Only community admins or system admins can change member roles
+ * - Moderators cannot change roles
+ * @param userId The ID of the user attempting to change the role
+ * @param communityId The ID of the community
+ * @returns Boolean indicating if the user has permission to change roles
+ */
+export async function canChangeMemberRole(userId: string, communityId: string): Promise<boolean> {
+  // System admins can always change roles
+  const isSystemAdminUser = await isSystemAdmin(userId);
+  if (isSystemAdminUser) return true;
+  
+  // Check if the user is specifically a community admin (not just a moderator)
+  const member = await db
+    .selectFrom('members')
+    .where('user_Id', '=', userId)
+    .where('communityId', '=', communityId)
+    .where('role', '=', 'admin')
+    .select('id')
+    .executeTakeFirst();
+    
+  return !!member;
 }

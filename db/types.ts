@@ -30,6 +30,10 @@ interface UsersTable extends BaseEntity {
   emailVerified:boolean;
   image?:string;
   role : 'user' | 'admin' | 'owner';
+  bio ?: string;
+  location?: string;
+  website?: string;
+  coverImage?: string;
 }
 
 interface SessionTable extends BaseEntity {
@@ -118,7 +122,7 @@ export interface MembersTable {
   user_Id: string;
   communityId:string;
   role : 'member' | 'moderator' | 'admin';
-  approved_by : string;
+  approved_by ?: string;
   joined_at: ColumnType<Date, string | undefined, never>;
   created_at: ColumnType<Date, string | undefined, never>;
   updated_at: ColumnType<Date, string | undefined, never>;

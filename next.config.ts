@@ -17,7 +17,8 @@ const nextConfig: NextConfig = {
   },
   experimental :{
     authInterrupts : true
-  }
+  },
+  transpilePackages : ['isomorphic-dompurify']
 };
 
 export default nextConfig;

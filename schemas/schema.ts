@@ -10,7 +10,7 @@ export const baseCommunitySchema = z.object({
     language: z.string().min(1, "Language is required").max(50, "Language cannot exceed 50 characters"),
     visibility: z.enum(['public', 'private']).default('public'),
     genre_id: z.string().nonempty("Genre is required")
-  });
+});
   
   // Unified schema for both create and update
   export const communitySchema = baseCommunitySchema;
@@ -37,13 +37,21 @@ export const baseGenreSchema = z.object({
 export const genreSchema = baseGenreSchema;
 export type GenreFormInput = z.infer<typeof genreSchema>;
 
-
-export const createPostSchema = z.object({
+export const basePostSchema = z.object({
+    id: z.string().optional(),
     title: z.string().min(1, { message: "Title is required" }),
-    content : z.string().min(1, { message: "Content is required" }),
-    image : z.string().url(),
-    tags : z.array(z.string()),
-})
+    content : z.string().min(14, { message: "Content is required" }),
+    image : z.string().url("Please enter a valid URL for the image"),
+    tags : z.array(z.string()).min(1, { message: "At least one tag is required" }),
+});
+  
+  // Unified schema for both create and update
+  export const postSchema = basePostSchema;
+  
+  // Define our type
+  export type PostFormInput = z.infer<typeof postSchema>;
+  
+
 
 
 export const updatePostSchema = z.object({
@@ -51,4 +59,22 @@ export const updatePostSchema = z.object({
     content : z.string().min(1, { message: "Content is required" }),
     image : z.string().url(),
     tags : z.array(z.string()),
+})
+
+
+export const updateJoinRequestSchema = z.object({
+    status: z.enum(['accepted', 'rejected'] , {
+        message : 'Status must be either accepted or rejected'
+    }),
+})
+
+// Define the form schema
+export const updateUserSchema = z.object({
+    // Profile step
+    name: z.string().min(3, "Username must be at least 3 characters").max(30, "Username cannot exceed 30 characters"),
+    image: z.string().optional(),
+    coverImage: z.string().optional(),
+    bio: z.string().max(160, "Bio cannot exceed 160 characters").optional(),
+    location: z.string().max(100, "Location cannot exceed 100 characters").optional(),
+    website: z.string().url().optional(),
 })

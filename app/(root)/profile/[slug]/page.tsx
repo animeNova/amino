@@ -39,7 +39,7 @@ import { useToast } from "@/hooks/use-toast"
 import Container from "@/components/ui/container"
 import { FollowersDialog } from "@/components/dialogs/profile/followers-dialog"
 import { ProfileSettingsDialog } from "@/components/dialogs/profile/profile-settings-dialog"
-import AnimePostCard from "@/components/ui/posts/post"
+import AnimePostCard from "@/components/posts/postCard"
 // Replace the import for PostCard
 
 export default function UserProfilePage({ params }: { params: { username: string } }) {

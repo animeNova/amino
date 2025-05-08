@@ -2,7 +2,7 @@ import { Suspense } from "react"
 import { FilterBar } from "@/components/explore/filter-bar"
 import Container from "@/components/ui/container"
 import { getCommunitys } from "@/app/actions/community/get"
-import CommunityCard from "@/components/ui/communityCard"
+import CommunityCard from "@/components/community/communityCard"
 import PaginationButtons from "@/components/ui/pagination-buttons"
 
 

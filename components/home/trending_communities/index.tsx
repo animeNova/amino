@@ -1,6 +1,6 @@
 
 import { getCommunitys } from '@/app/actions/community/get';
-import CommunityCard from '@/components/ui/communityCard';
+import CommunityCard from '@/components/community/communityCard';
 import Heading from '@/components/ui/heading'
 import React from 'react'
 
@@ -10,6 +10,7 @@ import React from 'react'
 
 const index =async () => {
   const {communities} =await getCommunitys()
+  
   return (
     <section className="container py-8 md:py-12">
         <Heading>

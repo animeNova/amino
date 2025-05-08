@@ -12,7 +12,7 @@ export const GetLikeByPostId =async (postId : string) => {
             .where('user_id', '=', userId)
             .selectAll()
             .executeTakeFirstOrThrow();
-        return like;
+        return !!like;
     } catch (error) {
         console.error('Error fetching like:', error);
         throw new Error('Failed to fetch like');

@@ -1,10 +1,14 @@
-import { Bell, MoreHorizontal, Share2, Users, MessageCircle, SquareChartGantt } from "lucide-react"
+'use client';
+import { Bell, MoreHorizontal, Users, MessageCircle } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { CreatePostDialog } from "./create-post";
-import Link from "next/link"
+import CommunityJoin from "./community-join"
+import ShareDialog from "../ui/share-dialog"
+import useCreatePostDialogStore from "@/store/useCreatePostDialog";
+import { useEffect, useState } from "react";
+
 interface CommunityInfoProps {
   community: {
     id : string;
@@ -23,7 +27,17 @@ interface CommunityInfoProps {
   canManage : boolean;
 }
 
-export function CommunityInfo({ community , isMember , canManage}: CommunityInfoProps) {
+export function CommunityInfo({ community, isMember, canManage}: CommunityInfoProps) {
+  const {open} = useCreatePostDialogStore();
+  const [communityUrl, setCommunityUrl] = useState("");
+  
+  useEffect(() => {
+    // Get the URL using client-side window object
+    const baseUrl = window.location.origin;
+    const url = `${baseUrl}/community/${community.id}`;
+    setCommunityUrl(url);
+  }, [community.id]);
+  
   return (
     <Card>
       <CardHeader className="relative pb-0">
@@ -48,29 +62,27 @@ export function CommunityInfo({ community , isMember , canManage}: CommunityInfo
             Active
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center justify-center">
           {
             isMember ? (
-              <CreatePostDialog />
+              <Button onClick={() => open()} className="rounded-[10px]">Create Post</Button>
             ) : (
-              <Button className="flex-1">Join Community</Button>
+              <CommunityJoin communityId={community.id} size="sm"/>
             )
           }
-          {
+          {/* {
             canManage && (
               <Link href={`/dashboard/community/${community.id}`}>
-              <Button variant="outline" size="icon">
-                <SquareChartGantt className="h-4 w-4" />
+              <Button variant="outline" size={'sm'}>
+                <SquareChartGantt className="h-6 w-4" />
               </Button>
               </Link>
             )
-          }
-            <Button variant="outline" size="icon">
-            <Bell className="h-4 w-4" />
+          } */}
+            <Button variant="outline" size={'sm'}>
+            <Bell className="h-6 w-4" />
           </Button>
-          <Button variant="outline" size="icon">
-            <Share2 className="h-4 w-4" />
-          </Button>
+          <ShareDialog postUrl={communityUrl} postTitle="Share This Community" />
         </div>
         <Separator />
         <div className="space-y-4">

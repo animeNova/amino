@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import AnimePostCard from "@/components/ui/posts/post"
+import AnimePostCard from "@/components/posts/postCard"
 
 const relatedPosts = [
   {

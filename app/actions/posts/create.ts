@@ -2,36 +2,46 @@
 
 import { db } from "@/db";
 import { auth } from "@/lib/auth";
-import { createPostSchema } from "@/schemas/schema";
+import { postSchema } from "@/schemas/schema";
 import { canCreatePost } from "@/utils/permissions";
 import { headers } from "next/headers";
 import { z } from "zod";
+import { getUserId } from "../helpers/get-userId";
+import { revalidatePath } from "next/cache";
 
-
-
-
-export const CreatePostAction =async (communityId : string,data : z.infer<typeof createPostSchema>) => {
+export async function CreatePostAction(communityHandler: string, data: z.infer<typeof postSchema>) {
     try {
-        const user = await auth.api.getSession({
-            headers : await headers()
-        })
-        const hasPermission = await canCreatePost(user?.user.id as string,communityId);
+        const community = await db
+            .selectFrom('community')
+            .where('handle', '=', communityHandler)
+            .select('id')
+            .executeTakeFirstOrThrow();
+        
+        const userId = await getUserId();
+        
+        const hasPermission = await canCreatePost(userId, community.id);
         if (!hasPermission) {
             throw new Error("You don't have permission to create a Post.");
         }
-        const community = await db
-            .selectFrom('community')
-            .where('id', '=', communityId)
-            .select('visibility')
-            .executeTakeFirstOrThrow();
-        const parsedData = createPostSchema.parse(data);
-        const post = await db.insertInto('posts').values({
-            ...parsedData,
-            user_id: user?.user.id as string,
-            community_id: communityId,
-            status: community.visibility === 'public' ? 'accepted' : 'pending',
-        }).executeTakeFirst();
-        return post
+    
+        const parsedData = postSchema.parse(data);
+        
+        // Insert the post and get the ID
+        const result = await db.insertInto('posts').values({
+            title: parsedData.title,
+            content: parsedData.content,
+            image: parsedData.image,
+            tags: parsedData.tags || [],
+            status: 'accepted',
+            user_id: userId,
+            community_id: community.id, 
+        }).returning('id').executeTakeFirst();
+        
+        // Revalidate the community page to show the new post
+        revalidatePath(`/community/${communityHandler}`);
+        
+        // Return a plain object with just the ID
+        return { success: true, postId: result?.id };
     } catch (error) {
         console.error('Error creating Post:', error);
         throw new Error('Failed to create Post');

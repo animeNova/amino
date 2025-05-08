@@ -22,7 +22,7 @@ export function ModeratorSidebar() {
   const path = usePathname()
   const params = useParams()
   const communityId = params.id as string
-  const sidebarLinks = getCommunitySideBarLinks(communityId)
+  const sidebarLinks = getCommunitySideBarLinks
 
   return (
     <Sidebar >
@@ -40,7 +40,7 @@ export function ModeratorSidebar() {
                 return (
                   <SidebarMenuItem className="space-y-3" key={link.href}>
                     <SidebarMenuButton asChild>
-                      <Link href={link.href} className={cn(isActive ? 'bg-secondary rounded-md' : '')}>
+                      <Link href={`/dashboard/community/${communityId}/${link.href}`} className={cn(isActive ? 'bg-secondary rounded-md' : '')}>
                         {link.icon}
                         <span>{link.title}</span>
                       </Link>

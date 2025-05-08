@@ -13,6 +13,7 @@ export interface MembersResult {
     name: string | null;
     image: string | null | undefined;
     approverName: string | null;
+    communityId : string;
 }
 export interface GetMembersResult {
     members: MembersResult[];
@@ -29,6 +30,7 @@ export async function getCommunityMembers(communityId: string,options: GetMember
     try {
         let countQuery = db.selectFrom('members').where('communityId', '=', communityId);
         let query = db.selectFrom('members')
+        .where('communityId', '=', communityId)
         .leftJoin('user', 'user.id', 'members.user_Id')
         .leftJoin('user as approver', 'approver.id', 'members.approved_by')
         .select([
@@ -38,6 +40,7 @@ export async function getCommunityMembers(communityId: string,options: GetMember
             'members.role',
             'members.joined_at',
             'approver.name as approverName',
+            'members.communityId'
         ]);
         
         // Apply search filter to both queries

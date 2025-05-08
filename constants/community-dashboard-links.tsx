@@ -1,29 +1,34 @@
-import { Flag, Globe, Home, NotepadText, Settings, TagsIcon, Users } from "lucide-react";
+import { Flag, Home, Inbox, NotepadText, Settings, Users } from "lucide-react";
 
-export const getCommunitySideBarLinks = (communityId: string) => [
+export const getCommunitySideBarLinks =  [
     {
         title: "Dashboard",
-        href: `${communityId}/admin`,
+        href: `admin`,
         icon: <Home className="h-4 w-4" />,
     },
     {
         title: "Posts",
-        href: `${communityId}/posts`,
+        href: `posts`,
         icon: <NotepadText className="h-4 w-4" />,
     },
     {
         title: "Members",
-        href: `${communityId}/members`,
+        href: `members`,
         icon: <Users className="h-4 w-4" />,
     },
     {
+        title: "Join Requests",
+        href: `join-requests`,
+        icon: <Inbox className="h-4 w-4" />,
+    },
+    {
         title: 'Reports',
-        href: `${communityId}/reports`,
+        href: `reports`,
         icon: <Flag className="h-4 w-4" />
     },
     {
         title: 'Settings',
-        href: `${communityId}/settings`,
+        href: `settings`,
         icon: <Settings className="h-4 w-4" />
     }
 ];

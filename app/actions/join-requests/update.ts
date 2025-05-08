@@ -4,12 +4,8 @@ import { db } from "@/db";
 import { canUpdateJoinRequestStatus } from "@/utils/permissions";
 import { z } from "zod";
 import { getUserId } from "../helpers/get-userId";
+import { updateJoinRequestSchema } from "@/schemas/schema";
 
-export const updateJoinRequestSchema = z.object({
-    status: z.enum(['accepted', 'rejected'] , {
-        message : 'Status must be either accepted or rejected'
-    }),
-})
 
 export const UpdateJoinRequest =async (requestId : string,data : z.infer<typeof updateJoinRequestSchema>) => {
     try {

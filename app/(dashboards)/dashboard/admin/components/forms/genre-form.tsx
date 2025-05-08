@@ -61,7 +61,7 @@ export function GenreForm({
         changedFields.id = initialData.id;
       }
       
-      ("Fields changed:", changedFields);
+      console.log("Fields changed:", changedFields);
       
       // Only pass changed fields to the parent onSubmit handler
       onSubmit(data);

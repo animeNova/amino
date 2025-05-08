@@ -18,7 +18,7 @@ interface PageParams {
   id: string;
 }
 
-export default async function CommunitiesPage({
+export default async function MembersPage({
   searchParams,
   params
 }: {
@@ -33,6 +33,7 @@ export default async function CommunitiesPage({
     offset : page ,
     search : search
   })
+
   return (
 
 

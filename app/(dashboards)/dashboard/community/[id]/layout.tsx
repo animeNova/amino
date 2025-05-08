@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Provider from "../../../../../providers/dashboard_provider";
-import { getUserId } from "@/app/actions/helpers/get-userId";
+import { getUserId, getUserIdSafe } from "@/app/actions/helpers/get-userId";
 import {isCommunityModerator,isSystemAdmin} from '@/utils/permissions'
 import { unauthorized } from "next/navigation";
 export const metadata: Metadata = {
@@ -16,11 +16,15 @@ export default async function AdminLayout({
     id : string
   }
 }>) {
-    // const userId = await getUserId();
-    // const hasPremission = await isCommunityModerator(userId,await params.id) ;
-    // if(!hasPremission) {
-    //     return unauthorized();
-    // }
+  const {id} = await params;
+    const userId = await getUserIdSafe();
+    if(!userId) {
+      return unauthorized();
+    }
+    const hasPremission = await isCommunityModerator(userId,id) ;
+    if(!hasPremission) {
+        return unauthorized();
+    }
   return (
     <div>
         <Provider>

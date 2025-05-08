@@ -2,7 +2,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Heart, MessageCircle, Share2, Bookmark } from "lucide-react"
-import AnimePostCard from "@/components/ui/posts/post"
+import AnimePostCard from "@/components/posts/postCard"
 
 const posts = [
   {

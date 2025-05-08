@@ -71,5 +71,12 @@
   body {
     @apply bg-background text-foreground;
   }
+  .youtube-video {
+    @apply block mx-auto;
+  }
+  .ProseMirror .youtube-wrapper {
+    @apply flex justify-center m-['1rem'];
+
+  }
 }
 

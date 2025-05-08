@@ -1,23 +1,36 @@
 import React from 'react'
-import { Card, CardContent } from './card'
+import { Card, CardContent } from '../ui/card'
 import Image from 'next/image'
-import { Avatar, AvatarFallback } from './avatar'
+import { Avatar, AvatarFallback } from '../ui/avatar'
 import { AvatarImage } from '@radix-ui/react-avatar'
-import { Button } from './button'
-import { BorderBeam } from './border-beam'
-import { Badge } from './badge'
+import { Button } from '../ui/button'
+import { BorderBeam } from '../ui/border-beam'
+import { Badge } from '../ui/badge'
 import Link from 'next/link'
+import { isCommunityMember } from '@/utils/permissions'
+import { getUserId } from '@/app/actions/helpers/get-userId'
+import CommunityJoin from './community-join'
 
 interface CommunityProps {
   id : string; 
   handle : string;
   name: string;
   image?: string;
-  memberCount: string | number | bigint; 
+  memberCount: string | number | bigint | null;
   description: string;
 }
 
-const CommunityCard : React.FC<CommunityProps> = ({description,id,memberCount,name,image,handle}) => {
+const CommunityCard : React.FC<CommunityProps> =async ({description,id,memberCount,name,image,handle}) => {
+  let userId;
+  try {
+    userId = await getUserId();
+  } catch (error) {
+    // User is not logged in, continue without userId
+    userId = null;
+  }
+  
+  // Only check membership if we have a userId
+  const isMember = userId ? await isCommunityMember(userId, id) : false;
   return (
     <div>
         <Card key={name} className="relative overflow-hidden">
@@ -48,9 +61,12 @@ const CommunityCard : React.FC<CommunityProps> = ({description,id,memberCount,na
                           </Avatar>
                         ))}
                       </div>
-                      <Button variant="outline" size="sm">
-                        Join
-                      </Button>
+                        {
+                          isMember ? 
+                          <Button variant="outline">Joined</Button>
+                          : 
+                          <CommunityJoin communityId={id} />
+                        }
                     </div>
                   </div>
                 </CardContent>

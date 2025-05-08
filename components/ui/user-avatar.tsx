@@ -1,14 +1,16 @@
 import React from 'react'
 import { Avatar ,AvatarImage } from './avatar';
+import { cn } from '@/lib/utils';
 
 interface UserAvatarProps {
   url ?: string | null; 
+  className ?: string;
 }
 
-const UserAvatar = ({url} : UserAvatarProps) => {
+const UserAvatar = ({url,className} : UserAvatarProps) => {
   return (
-    <Avatar>
-        <AvatarImage src={url ?? '/images/unknown.jpg'} />
+    <Avatar className={cn(className)}>
+        <AvatarImage src={url ?? '/images/unknown.jpg'} className='object-cover w-full' />
     </Avatar>
   )
 }

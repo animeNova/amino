@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
 import axios from 'axios';
 
 interface UploadResponse {
@@ -13,12 +12,22 @@ interface UploadResponse {
   size: number;
 }
 
-
 export function useUpload() {
   const [progress, setProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [data, setData] = useState<UploadResponse | null>(null);
 
-  const uploadMutation = useMutation<UploadResponse, Error, File>({
-    mutationFn: async (file: File) => {
+  const uploadAsync = async (file: File): Promise<UploadResponse> => {
+    try {
+      setIsUploading(true);
+      setIsSuccess(false);
+      setIsError(false);
+      setError(null);
+      setProgress(0);
+      
       const formData = new FormData();
       formData.append('file', file);
 
@@ -36,29 +45,44 @@ export function useUpload() {
         },
       });
 
-      return response.data;
-    },
-  });
-
-  const upload = (file: File) => {
-    setProgress(0);
-    return uploadMutation.mutate(file);
+      const responseData = response.data;
+      setData(responseData);
+      setIsSuccess(true);
+      return responseData;
+    } catch (err) {
+      const errorObj = err instanceof Error ? err : new Error('Unknown error occurred');
+      setError(errorObj);
+      setIsError(true);
+      throw errorObj;
+    } finally {
+      setIsUploading(false);
+    }
   };
 
-  const uploadAsync = (file: File) => {
+  const upload = (file: File) => {
+    uploadAsync(file).catch(() => {
+      // Error is already handled in uploadAsync
+    });
+  };
+
+  const reset = () => {
     setProgress(0);
-    return uploadMutation.mutateAsync(file);
+    setIsUploading(false);
+    setIsSuccess(false);
+    setIsError(false);
+    setError(null);
+    setData(null);
   };
 
   return {
     upload,
     uploadAsync,
     progress,
-    isUploading: uploadMutation.isPending,
-    isSuccess: uploadMutation.isSuccess,
-    isError: uploadMutation.isError,
-    error: uploadMutation.error,
-    data: uploadMutation.data,
-    reset: uploadMutation.reset,
+    isUploading,
+    isSuccess,
+    isError,
+    error,
+    data,
+    reset,
   };
 }

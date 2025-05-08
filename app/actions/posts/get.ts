@@ -1,12 +1,14 @@
 'use server';
 
 import { db } from "@/db";
+import { getUserIdSafe } from "../helpers/get-userId";
 
 export interface GetPostsOptions {
     limit?: number;
     offset?: number;
     search?: string;
     tag ?: string;
+    orderBy ?: 'desc' | 'asc';
 }
 
 export interface PostQuery {
@@ -26,6 +28,8 @@ export interface PostQuery {
   user_name : string;
   user_image : string | undefined;
   likeCount : number | null;
+  isLiked: string | null;  // Type for the post_id returned from the subquery, null if not liked
+  memberRole : 'member' | 'admin' | 'moderator' | null;
 }
 
 export interface GetPostsResult {
@@ -39,44 +43,59 @@ export const getPostsByCommunity = async (communityId : string,options: GetPosts
     const offset = options.offset ?? 0;
     const search = options.search ?? null;
     const tag = options.tag ?? null;
+    const orderBy = options.orderBy?? 'desc';
+    const userId = await getUserIdSafe();
     try {
         let baseQuery = db
         .selectFrom('posts as p')
         .where('p.status', '=', 'accepted')
-        .where('community_id', '=', communityId)
+        .where('p.community_id', '=', communityId)
         .innerJoin('community', 'p.community_id', 'community.id')
         .innerJoin('user', 'p.user_id', 'user.id')
         .leftJoin('user_levels as ul', 'user.id', 'ul.user_id')
+        .leftJoin('members', join => 
+          join.onRef('user.id', '=', 'members.user_Id')
+              .onRef('p.community_id', '=', 'members.communityId')
+        )
         .select([
-          // post fields
-          'p.id as post_id',
-          'p.title as post_title',
-          'p.content as post_content',
-          'p.image as post_image',
-          'p.tags as post_tags',
-          'p.user_id as post_user_id',
-          'p.community_id as post_community_id',
-          'p.status as post_status',
-          'p.created_at as post_created_at',
+        // post fields
+        'p.id as post_id',
+        'p.title as post_title',
+        'p.content as post_content',
+        'p.image as post_image',
+        'p.tags as post_tags',
+        'p.user_id as post_user_id',
+        'p.community_id as post_community_id',
+        'p.status as post_status',
+        'p.created_at as post_created_at',
 
-          // community fields
-          'community.id as community_id',
-          'community.name as community_name',
-          'community.image as community_image',
-          'community.handle as communityHandle',
+        // member role
+        'members.role as memberRole',
 
-         // User level fields
-          'ul.level as userLevel',
+        // community fields
+        'community.id as community_id',
+        'community.name as community_name',
+        'community.image as community_image',
+        'community.handle as communityHandle',
 
-          // user fields
-          'user.id as user_id',
-          'user.name as user_name',
-          'user.image as user_image',
-          eb => eb.selectFrom('post_likes as pl')
-          .whereRef('pl.post_id', '=', 'p.id')
-          .select(eb => eb.fn.count<number>('pl.user_id').as('count'))
-          .as('likeCount')
-        ]);
+        // User level fields
+        'ul.level as userLevel',
+
+        // user fields
+        'user.id as user_id',
+        'user.name as user_name',
+        'user.image as user_image',
+        eb => eb.selectFrom('post_likes as pl')
+        .whereRef('pl.post_id', '=', 'p.id')
+        .where('pl.user_id', '=', userId)  // userId from getUserId()
+        .select('pl.post_id')
+        .limit(1)
+        .as('isLiked'),
+        eb => eb.selectFrom('post_likes as pl')
+        .whereRef('pl.post_id', '=', 'p.id')
+        .select(eb => eb.fn.count<number>('pl.user_id').as('count'))
+        .as('likeCount')
+      ])
 
         if(search){
           baseQuery = baseQuery.where('p.title', 'like', `%${search}%`)
@@ -84,30 +103,46 @@ export const getPostsByCommunity = async (communityId : string,options: GetPosts
         if(tag){
           baseQuery = baseQuery.where('p.tags', '@>', [tag])
         }
-       // Create count query based on the same conditions
-       const countResult = await baseQuery
-       .select(eb => eb.fn.count<number>('id').as('count'))
-       .executeTakeFirst();
+        if(orderBy){
+          baseQuery = baseQuery.orderBy('p.created_at', orderBy);
+        }
+        // Create a separate count query
+        const countQuery = db
+          .selectFrom('posts as p')
+          .where('p.status', '=', 'accepted')
+          .where('p.community_id', '=', communityId);
+          
+        if(search){
+          countQuery.where('p.title', 'like', `%${search}%`);
+        }
+        
+        if(tag){
+          countQuery.where('p.tags', '@>', [tag]);
+        }
+        
+        const countResult = await countQuery
+          .select(eb => eb.fn.count<number>('p.id').as('count'))
+          .executeTakeFirst();
        
-      const totalCount = Number(countResult?.count ?? 0);
+        const totalCount = Number(countResult?.count ?? 0);
       
-      // Apply pagination to the main query
-      const posts = await baseQuery
-        .limit(limit)
-        .offset(offset)
-        .selectAll()
-        .execute();
-    return {
-        posts : posts,
-        totalCount,
-        hasMore: offset + posts.length < totalCount
-      };
+        // Apply pagination to the main query
+        const posts = await baseQuery
+          .limit(limit)
+          .offset(offset)
+          .execute();
+          
+        return {
+            posts : posts,
+            totalCount,
+            hasMore: offset + posts.length < totalCount
+        };
     } catch (error) {
         console.error('Error fetching posts:', error);
         throw new Error('Failed to fetch posts');
     }
 }
-export const getPostsByUser = async (userId : string,options: GetPostsOptions = {}) : Promise<GetPostsResult> => {
+export const getPostsByUser = async (userId : string,options: GetPostsOptions = {}) => {
     const limit = options.limit ?? 10;
     const offset = options.offset ?? 0;
     try {
@@ -145,6 +180,12 @@ export const getPostsByUser = async (userId : string,options: GetPostsOptions = 
           'user.image as user_image',
           eb => eb.selectFrom('post_likes as pl')
           .whereRef('pl.post_id', '=', 'p.id')
+          .where('pl.user_id', '=', userId)  // userId from getUserId()
+          .select('pl.post_id')
+          .limit(1)
+          .as('isLiked'),
+          eb => eb.selectFrom('post_likes as pl')
+          .whereRef('pl.post_id', '=', 'p.id')
           .select(eb => eb.fn.count<number>('pl.user_id').as('count'))
           .as('likeCount')
         ]);
@@ -172,43 +213,57 @@ export const getPostsByUser = async (userId : string,options: GetPostsOptions = 
 
 export async function getPostById(id: string) {
     try {
+      const userId = await getUserIdSafe();
+      
       const post = await db
-        .selectFrom('posts as p')
-        .where('id', '=', id)
-        .innerJoin('community', 'p.community_id', 'community.id')
-        .innerJoin('user', 'p.user_id', 'user.id')
-        .leftJoin('user_levels as ul', 'user.id', 'ul.user_id')
-        .select([
-          // post fields
-          'p.id as post_id',
-          'p.title as post_title',
-          'p.content as post_content',
-          'p.image as post_image',
-          'p.tags as post_tags',
-          'p.user_id as post_user_id',
-          'p.community_id as post_community_id',
-          'p.status as post_status',
-          'p.created_at as post_created_at',
+      .selectFrom('posts as p')
+      .where('p.status', '=', 'accepted')
+      .innerJoin('community', 'p.community_id', 'community.id')
+      .innerJoin('user', 'p.user_id', 'user.id')
+      .leftJoin('user_levels as ul', 'user.id', 'ul.user_id')
+      .leftJoin('members', join => 
+        join.onRef('user.id', '=', 'members.user_Id')
+            .onRef('p.community_id', '=', 'members.communityId')
+      )
+      .select([
+      // post fields
+      'p.id as post_id',
+      'p.title as post_title',
+      'p.content as post_content',
+      'p.image as post_image',
+      'p.tags as post_tags',
+      'p.user_id as post_user_id',
+      'p.community_id as post_community_id',
+      'p.status as post_status',
+      'p.created_at as post_created_at',
 
-          // community fields
-          'community.id as community_id',
-          'community.name as community_name',
-          'community.image as community_image',
-          'community.handle as communityHandle',
+      // member role
+      'members.role as memberRole',
 
-         // User level fields
-          'ul.level as userLevel',
+      // community fields
+      'community.id as community_id',
+      'community.name as community_name',
+      'community.image as community_image',
+      'community.handle as communityHandle',
 
-          // user fields
-          'user.id as user_id',
-          'user.name as user_name',
-          'user.image as user_image',
-          eb => eb.selectFrom('post_likes as pl')
-          .whereRef('pl.post_id', '=', 'p.id')
-          .select(eb => eb.fn.count<number>('pl.user_id').as('count'))
-          .as('likeCount')
-        ])
-        .executeTakeFirst();
+      // User level fields
+      'ul.level as userLevel',
+
+      // user fields
+      'user.id as user_id',
+      'user.name as user_name',
+      'user.image as user_image',
+      eb => eb.selectFrom('post_likes as pl')
+      .whereRef('pl.post_id', '=', 'p.id')
+      .where('pl.user_id', '=', userId)  // userId from getUserId()
+      .select('pl.post_id')
+      .limit(1)
+      .as('isLiked'),
+      eb => eb.selectFrom('post_likes as pl')
+      .whereRef('pl.post_id', '=', 'p.id')
+      .select(eb => eb.fn.count<number>('pl.user_id').as('count'))
+      .as('likeCount')
+    ]).executeTakeFirst();
       
       return post || null;
     } catch (error) {
@@ -216,4 +271,113 @@ export async function getPostById(id: string) {
       throw new Error('Failed to fetch post');
     }
 }
+export const getPosts = async (options: GetPostsOptions = {}): Promise<GetPostsResult> => {
+    const limit = options.limit ?? 10;
+    const offset = options.offset ?? 0;
+    const search = options.search ?? null;
+    const tag = options.tag ?? null;
+    const orderBy = options.orderBy ?? 'desc';
+    const userId = await getUserIdSafe();
+
+    try {
+        let baseQuery = db
+            .selectFrom('posts as p')
+            .where('p.status', '=', 'accepted')
+            .innerJoin('community', 'p.community_id', 'community.id')
+            .innerJoin('user', 'p.user_id', 'user.id')
+            .leftJoin('user_levels as ul', 'user.id', 'ul.user_id')
+            .leftJoin('members', join => 
+              join.onRef('user.id', '=', 'members.user_Id')
+                  .onRef('p.community_id', '=', 'members.communityId')
+            )
+            .select([
+                // post fields
+                'p.id as post_id',
+                'p.title as post_title',
+                'p.content as post_content',
+                'p.image as post_image',
+                'p.tags as post_tags',
+                'p.user_id as post_user_id',
+                'p.community_id as post_community_id',
+                'p.status as post_status',
+                'p.created_at as post_created_at',
+
+                // community fields
+                'community.id as community_id',
+                'community.name as community_name',
+                'community.image as community_image',
+                'community.handle as communityHandle',
+
+                // member role
+                'members.role as memberRole',
+                // User level fields
+                'ul.level as userLevel',
+
+                // user fields
+                'user.id as user_id',
+                'user.name as user_name',
+                'user.image as user_image',
+
+                // Like status and count
+                eb => eb.selectFrom('post_likes as pl')
+                    .whereRef('pl.post_id', '=', 'p.id')
+                    .where('pl.user_id', '=', userId)
+                    .select('pl.post_id')
+                    .limit(1)
+                    .as('isLiked'),
+                eb => eb.selectFrom('post_likes as pl')
+                    .whereRef('pl.post_id', '=', 'p.id')
+                    .select(eb => eb.fn.count<number>('pl.user_id').as('count'))
+                    .as('likeCount')
+            ]);
+
+        if (search) {
+            baseQuery = baseQuery.where('p.title', 'like', `%${search}%`);
+        }
+        if (tag) {
+            baseQuery = baseQuery.where('p.tags', '@>', [tag]);
+        }
+        if (orderBy) {
+            baseQuery = baseQuery.orderBy('p.created_at', orderBy);
+        }
+
+        // Create a separate count query
+        const countQuery = db
+            .selectFrom('posts as p')
+            .where('p.status', '=', 'accepted');
+
+        if (search) {
+            countQuery.where('p.title', 'like', `%${search}%`);
+        }
+        if (tag) {
+            countQuery.where('p.tags', '@>', [tag]);
+        }
+
+        const countResult = await countQuery
+            .select(eb => eb.fn.count<number>('p.id').as('count'))
+            .executeTakeFirst();
+
+        const totalCount = Number(countResult?.count ?? 0);
+
+        // Apply pagination to the main query
+        const posts = await baseQuery
+            .limit(limit)
+            .offset(offset)
+            .execute();
+
+        return {
+            posts,
+            totalCount,
+            hasMore: offset + posts.length < totalCount
+        };
+    } catch (error) {
+        console.error('Error fetching posts:', error);
+        throw new Error('Failed to fetch posts');
+    }
+}
+
+
+
+
+
   

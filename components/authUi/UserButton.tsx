@@ -15,6 +15,7 @@ import { LuLayoutDashboard } from "react-icons/lu";
 
 import { signOut } from '@/lib/auth/client';
 import { useRouter } from 'next/navigation';
+
 interface UserButtonProps {
     id : string;
     name : string;
@@ -22,47 +23,48 @@ interface UserButtonProps {
     role : string | null | undefined;
 }
  
-const UserButton : React.FC<UserButtonProps> = ({
+const UserButton: React.FC<UserButtonProps> = ({
     id,
     name,
     image,
     role
 }) => {
-  const router = useRouter()
+  const router = useRouter();
+  
   return (
     <DropdownMenu>
        <DropdownMenuTrigger className='pt-2'>
-        <Avatar >
+        <Avatar>
           <Image src={image ?? '/images/unknown.jpg'} width={100} height={100} alt={name} className='rounded-full object-cover' />
-          </Avatar>
+        </Avatar>
        </DropdownMenuTrigger>
        <DropdownMenuContent>
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => router.push(`/profile/${id}`)}>
-          <User />
-          Profile
+          <User className="mr-2 h-4 w-4" />
+          <span>Profile</span>
         </DropdownMenuItem>
         {
-          role != 'user' && (
-          <DropdownMenuItem onClick={() => router.push('dashboard/admin')}>
-            <LuLayoutDashboard />
-            Dashboard
+          role !== 'user' && (
+          <DropdownMenuItem onClick={() => router.push('/dashboard/admin')}>
+            <LuLayoutDashboard className="mr-2 h-4 w-4" />
+            <span>Dashboard</span>
           </DropdownMenuItem>
           )
         }
     
         <DropdownMenuItem>
-          <Settings className='hover:rotate-[30deg] transition-transform' />
-          Setting
-          </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => {
-          signOut()
+          <Settings className='hover:rotate-[30deg] transition-transform mr-2 h-4 w-4' />
+          <span>Setting</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={async () => {
+          await signOut();
           router.refresh();
         }}>
-          <LogOutIcon color='#E50046' />
-          Logout
-          </DropdownMenuItem>
+          <LogOutIcon color='#E50046' className="mr-2 h-4 w-4" />
+          <span>Logout</span>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

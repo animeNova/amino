@@ -1,26 +1,30 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Sparkles, Eye } from "lucide-react"
+import { MessageCircle, Share2, Bookmark, MoreHorizontal, Sparkles, Eye } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
 import { motion } from "framer-motion"
+import UserAvatar from "../ui/user-avatar"
+import Link from "next/link"
+import LikeButton from "./like"
 
 interface AnimePostCardProps {
   author: {
-    name: string
-    avatar: string
-    level?: number
+    name: string;
+    avatar?: string;
+    level?: number | null;
   }
   post: {
+    id:string;
     title: string
     excerpt: string
-    images?: string
+    image: string
     publishDate: string
   }
   genres: string[]
@@ -29,54 +33,36 @@ interface AnimePostCardProps {
     comments: number
     shares: number
   }
-  isLiked?: boolean
   isBookmarked?: boolean
+  isLiked : string | null;
 }
 
 export default function AnimePostCard({
-  author = {
-    name: "SakuraChan",
-    avatar: "/placeholder.svg?height=40&width=40",
-    level: 42,
-  },
-  post = {
-    title: "Why Chainsaw Man is a Masterpiece!",
-    excerpt:
-      "Just finished binge-watching Chainsaw Man and I need to share my thoughts! The animation quality and story development are absolutely incredible...",
-    images:
-      "https://thumbs.dreamstime.com/b/anime-boy-aesthetic-image-wallpaper-cute-cartoon-anime-wallpaper-342273503.jpg",
-    publishDate: "2 hours ago",
-  },
-  genres = ["Shounen", "Action", "Supernatural"],
-  stats = {
-    likes: 124,
-    comments: 32,
-    shares: 8,
-  },
-  isLiked = false,
+  author,
+  post,
+  genres,
+  stats,
   isBookmarked = false,
+  isLiked
 }: AnimePostCardProps) {
-  const [liked, setLiked] = useState(isLiked)
-  const [likeCount, setLikeCount] = useState(stats.likes)
-  const [bookmarked, setBookmarked] = useState(isBookmarked)
+  // Initialize state with null to prevent hydration mismatch
+  const [bookmarked, setBookmarked] = useState<boolean | null>(null)
   const [isHovered, setIsHovered] = useState(false)
+  
+  // Set the initial state after component mounts on client
+  useEffect(() => {
+    setBookmarked(isBookmarked)
+  }, [stats.likes, isBookmarked])
 
-  const handleLike = () => {
-    if (liked) {
-      setLikeCount(likeCount - 1)
-    } else {
-      setLikeCount(likeCount + 1)
-    }
-    setLiked(!liked)
-  }
 
   const handleBookmark = () => {
     setBookmarked(!bookmarked)
   }
 
+
   return (
     <Card
-      className="max-w-[400px] mx-auto border-2 bg-background hover:shadow-xl transition-all duration-300 flex justify-between flex-col overflow-hidden"
+      className="w-[380px] md:w-[400px] mx-auto border-2 bg-background hover:shadow-xl transition-all duration-300 flex justify-between flex-col overflow-hidden"
       style={{
         boxShadow: isHovered ? "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)" : "",
         transform: isHovered ? "translateY(-2px)" : "",
@@ -84,30 +70,40 @@ export default function AnimePostCard({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Rest of your component remains the same */}
       <CardHeader className="pt-5 pb-2 space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
               <Avatar
                 className={cn(
-                  "h-12 w-12 border-2 transition-all duration-300",
+                  "size-12 border-2 transition-all duration-300",
                   isHovered ? "border-primary shadow-md" : "border-primary/70",
                 )}
               >
-                <AvatarImage src={author.avatar} alt={author.name} />
+                <UserAvatar url={author.avatar} className="w-full h-full" />
                 <AvatarFallback className="bg-primary/10">{author.name.charAt(0)}</AvatarFallback>
               </Avatar>
-              {author.level && (
+            
                 <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-md font-medium shadow-sm">
-                  Lv.{author.level}
+                  Lv.5
                 </div>
-              )}
+             
             </div>
             <div>
-              <p className="font-bold text-lg flex items-center gap-1">
-                {author.name}
+              <div className={cn(
+                "font-bold flex items-center gap-1 text-lg"
+              )}>
+                {author.name.includes('@') 
+                  ? author.name.split('@')[0] 
+                  : author.name}
+                {author.name.length > 15 && 
+                  <span className="inline-block" title={author.name}>
+                    <MoreHorizontal className="h-3 w-3" />
+                  </span>
+                }
                 <Sparkles className="h-4 w-4 text-yellow-500" />
-              </p>
+              </div>
               <p className="text-xs text-muted-foreground">{post.publishDate}</p>
             </div>
           </div>
@@ -153,43 +149,31 @@ export default function AnimePostCard({
             onMouseLeave={() => setIsHovered(false)}
           >
             <Image
-              src={"https://thumbs.dreamstime.com/b/anime-boy-aesthetic-image-wallpaper-cute-cartoon-anime-wallpaper-342273503.jpg"}
+              src={post.image}
               alt={post.title}
               fill
               className={cn("object-cover transition-transform duration-500", isHovered ? "scale-105" : "")}
             />
           </div>
-        <p className="text-muted-foreground leading-relaxed line-clamp-3">{post.excerpt}</p>
-
-        <Button
-          variant="link"
-          className="px-0 font-semibold text-primary hover:text-primary/80 hover:underline transition-all"
-        >
-          Read more →
-        </Button>
-      </CardContent>
+          
+          {/* Replace dangerouslySetInnerHTML with a safer approach */}
+          <div className="text-muted-foreground leading-relaxed line-clamp-3">
+            {post.excerpt}
+          </div>
+          
+          <Link href={`/post/${post.id}`}>
+            <Button
+              variant="link"
+              className="px-0 font-semibold text-primary hover:text-primary/80 hover:underline transition-all"
+            >
+              Read more →
+            </Button>
+          </Link>
+        </CardContent>
 
       <CardFooter className="py-3 border-t flex justify-between">
         <div className="flex items-center gap-4">
-          <motion.div whileTap={{ scale: 0.9 }}>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "flex items-center gap-1.5 transition-colors",
-                liked ? "bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-950/30" : "",
-              )}
-              onClick={handleLike}
-            >
-              <Heart
-                className={cn(
-                  "h-5 w-5 transition-colors",
-                  liked ? "fill-red-500 text-red-500" : "text-muted-foreground",
-                )}
-              />
-              <span className={cn("font-medium", liked ? "text-red-500" : "text-muted-foreground")}>{likeCount}</span>
-            </Button>
-          </motion.div>
+          <LikeButton postId={post.id} likes={stats.likes} isLiked={isLiked !== null}  />
 
           <Button
             variant="ghost"
