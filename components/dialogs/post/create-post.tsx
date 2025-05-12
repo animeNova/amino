@@ -14,7 +14,7 @@ export function CreatePostDialog() {
   const {isOpen,close} = useCreatePostDialogStore()
 
   const params = useParams();
-  const slug = params.slug as string;
+  const communityHandler = params.slug as string;
   const router = useRouter()
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -30,17 +30,18 @@ export function CreatePostDialog() {
                 setError(null);
                 startTransition(async () => {
                   try {
-                    await CreatePostAction(slug,data)
-                    toast({title:"success" , description:"Community created successfully"});
+                    await CreatePostAction(communityHandler,data)
+                    toast({title:"success" , description:"Post created successfully"});
                     router.refresh();
                     close();
                   } catch (err) {
-                    setError(err instanceof Error ? err.message : "Failed to create community");
-                    toast({title:"error" , description:"Failed to create community"});                  }
+                    setError(err instanceof Error ? err.message : "Failed to create Post");
+                    toast({title:"error" , description:"Failed to create Post"});                  }
                 });
               }}
               isEditMode={false}
               isLoading={isPending} 
+
                />
       </DialogContent>
     </Dialog>

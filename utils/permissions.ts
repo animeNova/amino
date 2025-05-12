@@ -1,17 +1,10 @@
-// File: utils/permissions.ts
-
+'use server';
 import { hasUserRequestedToJoin } from "@/app/actions/join-requests/get";
 import { db } from "@/db";
 
 /**
  * Permission levels in the system
  */
-export enum Role {
-  USER = 'user',
-  MODERATOR = 'moderator',
-  ADMIN = 'admin',
-  SUPERADMIN = 'superadmin'
-}
 
 /**
  * Check if a user is the author of a post
@@ -54,6 +47,25 @@ export async function canEditPost(userId: string,postId : string): Promise<boole
     const isAuthor = await isPostAuthor(userId, postId);
     if (isAuthor) return true;
     return false;
+}
+export async function getPostPermissions(userId: string, postId: string) {
+  const isAuthor = await isPostAuthor(userId, postId);
+  if (!isAuthor) {
+    return {
+      canEdit: false,
+      canDelete: false,
+    };
+  }
+  
+  const [canEdit, canDelete] = await Promise.all([
+    canEditPost(userId, postId),
+    canDeletePost(userId, postId)
+  ]);
+  
+  return {
+    canEdit,
+    canDelete
+  };
 }
 export async function canDeletePost(userId: string,postId : string): Promise<boolean> {
     // First, check if the user is the comment author (simplest case)

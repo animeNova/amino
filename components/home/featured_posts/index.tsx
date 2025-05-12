@@ -14,7 +14,7 @@ export default async function AnimeFeed() {
         </Heading>
 
 
-        <PostList posts={posts} />
+        <PostList posts={posts} className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-6 w-full" />
     </div>
   )
 }

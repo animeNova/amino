@@ -1,5 +1,5 @@
 'use client';
-import React from 'react'
+import React , {useState} from 'react'
 import { Avatar} from "@/components/ui/avatar"
 import {
   DropdownMenu,
@@ -10,11 +10,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Image from 'next/image';
-import { LogOutIcon, Settings, User } from 'lucide-react';
+import { LogOutIcon, Settings, User, Users } from 'lucide-react';
 import { LuLayoutDashboard } from "react-icons/lu";
 
 import { signOut } from '@/lib/auth/client';
 import { useRouter } from 'next/navigation';
+import { ProfileSettingsDialog } from '../dialogs/profile/profile-settings-dialog';
 
 interface UserButtonProps {
     id : string;
@@ -29,9 +30,10 @@ const UserButton: React.FC<UserButtonProps> = ({
     image,
     role
 }) => {
+  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
   const router = useRouter();
-  
   return (
+    <>
     <DropdownMenu>
        <DropdownMenuTrigger className='pt-2'>
         <Avatar>
@@ -53,8 +55,9 @@ const UserButton: React.FC<UserButtonProps> = ({
           </DropdownMenuItem>
           )
         }
+
     
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setSettingsDialogOpen(true)}>
           <Settings className='hover:rotate-[30deg] transition-transform mr-2 h-4 w-4' />
           <span>Setting</span>
         </DropdownMenuItem>
@@ -67,6 +70,9 @@ const UserButton: React.FC<UserButtonProps> = ({
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+    <ProfileSettingsDialog open={settingsDialogOpen} onOpenChange={setSettingsDialogOpen} />
+
+    </>
   )
 }
 

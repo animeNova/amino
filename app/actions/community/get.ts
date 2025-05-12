@@ -29,6 +29,16 @@ export interface GetCommunitiesResult {
   hasMore: boolean;
 }
 
+export interface GetCommunityByHandlerResult extends Community {
+  staff :{
+    memberId : string,      // ID of the member record
+    role : string,                // Role of the member in the community
+    userId : string,   // ID of the user
+    userName:string;      // Name of the user
+    userImage?:string;
+  }[]
+}
+
 
 
 export async function getCommunitys(options: GetCommunitiesOptions = {})  {
@@ -128,19 +138,49 @@ export async function getCommunityById(id: string): Promise<Community> {
     }
 }
 
-export async function getCommunityByHandle(handle: string): Promise<Community> {
+export async function getCommunityByHandle(handle: string): Promise<GetCommunityByHandlerResult> {
   try {
     const community = await db
       .selectFrom('community')
       .where('handle', '=', handle)
       .selectAll()
       .executeTakeFirst();
-    if(!community){
+
+    if (!community) {
       throw new Error('Community not found');
     }
-    return community;
+
+    // Fetch admin and moderator members for this community
+    const members = await db
+      .selectFrom('members')
+      .innerJoin('user', 'members.user_Id', 'user.id')
+      .where('members.communityId', '=', community.id)
+      .where((eb) => eb.or([ // Filter for admin or moderator roles
+        eb('members.role', '=', 'admin'),
+        eb('members.role', '=', 'moderator')
+      ]))
+      .select([
+        'members.id as memberId',      // ID of the member record
+        'members.role',                // Role of the member in the community
+        'members.user_Id as userId',   // ID of the user
+        'user.name as userName',       // Name of the user
+        'user.image as userImage'      // Image of the user
+      ])
+      .execute();
+
+    // Add the fetched members to the community object
+    // Ensure your Community type definition can accommodate this 'members' property.
+    return {
+      ...community,
+      staff: members
+    };
+
   } catch (error) {
-    console.error(`Error fetching community ${handle}:`, error);
-    throw new Error('Failed to fetch community');
+    console.error(`Error fetching community ${handle} with members:`, error);
+    if (error instanceof Error && error.message === 'Community not found') {
+        throw error; // Re-throw specific known errors
+    }
+    // Provide a more specific error message if fetching members fails or another error occurs
+    throw new Error(`Failed to fetch community by handle '${handle}' with its admin/moderator members.`);
   }
 }

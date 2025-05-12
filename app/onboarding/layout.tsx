@@ -11,22 +11,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user =await isUserNew()
-  if(user){
-    return redirect('/onboarding')
+  if(!user){
+    return redirect('/')
   }
   return (
     <div>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Toaster />
-        <Header />
-        <LoginDialog />
         {children}
-        </ThemeProvider>
-        </div>
+     </div>
   );
 }

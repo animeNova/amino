@@ -27,6 +27,7 @@ export async function updateUser(userId: string, data: unknown) {
         bio: validatedData.bio,
         location: validatedData.location,
         website: validatedData.website,
+        is_new:false
       })
       .where('id', '=', userId)
       .execute();

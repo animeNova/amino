@@ -31,16 +31,16 @@ const LikeButton: React.FC<LikeProps> = ({ postId, likes: initialLikes, isLiked:
 
         try {
             setIsLoading(true);
-            // Optimistic update
+            // Optimistic update - ensure we're using number addition, not string concatenation
             setLiked(!liked);
-            setLocalLikes(prev => liked ? prev - 1 : prev + 1);
+            setLocalLikes(prevLikes => liked ? Number(prevLikes) - 1 : Number(prevLikes) + 1);
             
             const response = await CreateLikeAction(postId);
             
             if (!response.success) {
                 // Revert optimistic update if failed
                 setLiked(liked);
-                setLocalLikes(initialLikes || 0);
+                setLocalLikes(Number(initialLikes) || 0);
                 throw new Error(response.error || 'Failed to process like');
             }
             

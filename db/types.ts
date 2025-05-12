@@ -21,6 +21,7 @@ interface Database {
   post_likes : PostLikesTable;
   comments : CommentsTable;
   comments_likes : CommentLikesTable;
+  followers: FollowersTable; // Add this line
 }
 
 interface UsersTable extends BaseEntity {
@@ -34,6 +35,7 @@ interface UsersTable extends BaseEntity {
   location?: string;
   website?: string;
   coverImage?: string;
+  is_new : boolean;
 }
 
 interface SessionTable extends BaseEntity {
@@ -174,6 +176,14 @@ export interface CommentLikesTable {
 
 }
 
+// Add the new FollowersTable interface
+export interface FollowersTable {
+  id: Generated<string>;
+  follower_id: string;
+  following_id: string;
+  created_at: ColumnType<Date, string | undefined, never>;
+}
+
 
 export type User = Selectable<UsersTable>;
 export type UserUpdate = Updateable<UsersTable>;
@@ -219,6 +229,11 @@ export type PostCommentUpdate = Updateable<CommentsTable>;
 export type CommentLikes = Selectable<CommentLikesTable>;
 export type NewCommentLike = Insertable<CommentLikesTable>;
 export type CommentLikeUpdate = Updateable<CommentLikesTable>;
+
+// Add types for Followers
+export type Follower = Selectable<FollowersTable>;
+export type NewFollower = Insertable<FollowersTable>;
+export type FollowerUpdate = Updateable<FollowersTable>;
 
 
 export type { Database }

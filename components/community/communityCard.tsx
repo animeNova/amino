@@ -52,15 +52,7 @@ const CommunityCard : React.FC<CommunityProps> =async ({description,id,memberCou
                       <Badge variant="secondary">{memberCount} members</Badge>
                     </div>
                     <p className="text-muted-foreground mb-4 line-clamp-2">{description}</p>
-                    <div className="flex items-center justify-between">
-                      <div className="flex -space-x-2">
-                        {[1, 2, 3].map((i) => (
-                          <Avatar key={i} className="border-2 border-background w-8 h-8">
-                            <AvatarImage src={`/placeholder.svg?text=M${i}`} />
-                            <AvatarFallback>M{i}</AvatarFallback>
-                          </Avatar>
-                        ))}
-                      </div>
+                    <div className="flex items-center justify-end">
                         {
                           isMember ? 
                           <Button variant="outline">Joined</Button>

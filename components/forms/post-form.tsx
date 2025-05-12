@@ -157,15 +157,7 @@ const PostForm : React.FC<CreatePostFormProps> = ({
                     <Upload className="mr-2 h-4 w-4" />
                     {imageUpload.isUploading ? `Uploading ${imageUpload.progress}%` : "Upload Image"}
                   </label>
-                  <Input
-                    {...field}
-                    placeholder="Or enter image URL"
-                    onChange={(e) => {
-                      field.onChange(e)
-                      setImagePreview(e.target.value)
-                    }}
-                    disabled={imageUpload.isUploading}
-                  />
+
                 </div>
                 {imageUpload.isUploading && (
                   <div className="w-full bg-secondary rounded-full h-2.5">
@@ -208,7 +200,7 @@ const PostForm : React.FC<CreatePostFormProps> = ({
               <div className="grid gap-2">
                 <div className="flex flex-wrap gap-2 mb-2">
                   {field.value.map((tag, index) => (
-                    <Badge key={index} className="gap-1">
+                    <div key={index} className="gap-1 bg-foreground text-background rounded-[5px] p-1">
                       {tag}
                       <button
                         type="button"
@@ -222,7 +214,7 @@ const PostForm : React.FC<CreatePostFormProps> = ({
                         <X className="h-3 w-3" />
                         <span className="sr-only">Remove {tag} tag</span>
                       </button>
-                    </Badge>
+                    </div>
                   ))}
                 </div>
                 <div className="flex gap-2">
@@ -311,7 +303,7 @@ const PostForm : React.FC<CreatePostFormProps> = ({
           <Save className="mr-2 h-4 w-4" />
           Save Draft
         </Button> */}
-        <Button type="submit">
+        <Button type="submit" disabled={isLoading}>
           <Send className="mr-2 h-4 w-4" />
           Publish Post
         </Button>

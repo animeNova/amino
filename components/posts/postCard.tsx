@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { MessageCircle, Share2, Bookmark, MoreHorizontal, Sparkles, Eye } from "lucide-react"
+import { MessageCircle, Share2, Bookmark, MoreHorizontal, Sparkles, Eye, Delete } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
@@ -13,9 +13,17 @@ import { motion } from "framer-motion"
 import UserAvatar from "../ui/user-avatar"
 import Link from "next/link"
 import LikeButton from "./like"
+import { useSession } from "@/lib/auth/client" // Added
+import { canEditPost, canDeletePost, getPostPermissions } from "@/utils/permissions" // Added
+import { UpdatePostDialog } from "../dialogs/post/update-post"
+import { DeleteConfirmationModal } from "../delete-confirmation-modal"
+import { deletePost } from "@/app/actions/posts/delete" // Add this import
+import { useRouter } from "next/navigation" // Add this import
+import { toast } from "@/hooks/use-toast"
 
 interface AnimePostCardProps {
   author: {
+    id:string;
     name: string;
     avatar?: string;
     level?: number | null;
@@ -44,15 +52,39 @@ export default function AnimePostCard({
   stats,
   isBookmarked = false,
   isLiked
-}: AnimePostCardProps) {
+}: Readonly<AnimePostCardProps>) {
   // Initialize state with null to prevent hydration mismatch
   const [bookmarked, setBookmarked] = useState<boolean | null>(null)
   const [isHovered, setIsHovered] = useState(false)
-  
+  // const [canEdit , setCanEdit] = useState(false) // This line was present in context, removing if not used or renaming
+  const [canEditPermission, setCanEditPermission] = useState(false); // Added
+  const [canDeletePermission, setCanDeletePermission] = useState(false); // Added
+  const [isOpen, setIsOpen] = useState(false); // Added for dialog state
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false); // Add this for delete modal
+  const [isDeleting, setIsDeleting] = useState(false); // Add this for delete state
+  const { data: session, isPending } = useSession(); // Added
+  const router = useRouter(); // Add this for navigation after deletion
+
   // Set the initial state after component mounts on client
   useEffect(() => {
     setBookmarked(isBookmarked)
   }, [stats.likes, isBookmarked])
+
+  useEffect(() => { // Added useEffect for permissions
+    const checkPermissions = async () => {
+      if (!isPending && session?.user?.id && post.id) {
+        const userId = session.user.id;
+        const {canDelete,canEdit} = await getPostPermissions(userId, post.id);
+        setCanEditPermission(canEdit);
+        setCanDeletePermission(canDelete);
+      } else {
+        setCanEditPermission(false);
+        setCanDeletePermission(false);
+      }
+    };
+
+    checkPermissions();
+  }, [post.id, session]);
 
 
   const handleBookmark = () => {
@@ -60,7 +92,34 @@ export default function AnimePostCard({
   }
 
 
+  // Add this function to handle post deletion
+  const handleDeletePost = async () => {
+    try {
+      setIsDeleting(true);
+      const response = await deletePost(post.id);
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: response.message || "Post Deleted successfully"
+        });
+        router.refresh();
+      } else {
+        toast({
+          title: "Error",
+          description: response.message || "Failed to Delete post",
+          variant: "destructive"
+        });
+      }
+      router.refresh(); // Refresh the page to show updated content
+    } catch (error) {
+      console.error("Error deleting post:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
+    <>
     <Card
       className="w-[380px] md:w-[400px] mx-auto border-2 bg-background hover:shadow-xl transition-all duration-300 flex justify-between flex-col overflow-hidden"
       style={{
@@ -91,6 +150,7 @@ export default function AnimePostCard({
              
             </div>
             <div>
+              <Link href={`/profile/${author.id}`}>
               <div className={cn(
                 "font-bold flex items-center gap-1 text-lg"
               )}>
@@ -104,6 +164,8 @@ export default function AnimePostCard({
                 }
                 <Sparkles className="h-4 w-4 text-yellow-500" />
               </div>
+              </Link>
+            
               <p className="text-xs text-muted-foreground">{post.publishDate}</p>
             </div>
           </div>
@@ -117,6 +179,19 @@ export default function AnimePostCard({
             <DropdownMenuContent align="end">
               <DropdownMenuItem>Follow {author.name}</DropdownMenuItem>
               <DropdownMenuItem>Mute posts</DropdownMenuItem>
+              {canEditPermission && ( // Added conditional Edit
+                <DropdownMenuItem onClick={() => setIsOpen(true)}>
+                  Edit Post
+                </DropdownMenuItem>
+              )}
+              {canDeletePermission && ( // Added conditional Delete
+                <DropdownMenuItem 
+                  className="text-red-600"
+                  onClick={() => setIsDeleteModalOpen(true)} // Update this to open delete modal
+                >
+                  Delete Post
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem>Report</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -211,6 +286,28 @@ export default function AnimePostCard({
         </motion.div>
       </CardFooter>
     </Card>
+    
+    {/* Add the UpdatePostDialog */}
+    {isOpen && (
+      <UpdatePostDialog
+        postId={post.id}
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+      />
+    )}
+    
+    {/* Add the DeleteConfirmationModal */}
+    <DeleteConfirmationModal
+      open={isDeleteModalOpen}
+      onOpenChange={setIsDeleteModalOpen}
+      onConfirm={handleDeletePost}
+      isDeleting={isDeleting}
+      title="Delete Post"
+      description="Are you sure you want to delete this post? This action cannot be undone."
+      itemName={post.title}
+      itemType="post"
+    />
+    </>
   )
 }
 

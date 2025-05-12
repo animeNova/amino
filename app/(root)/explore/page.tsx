@@ -4,7 +4,31 @@ import Container from "@/components/ui/container"
 import { getCommunitys } from "@/app/actions/community/get"
 import CommunityCard from "@/components/community/communityCard"
 import PaginationButtons from "@/components/ui/pagination-buttons"
+import { Metadata } from 'next'
 
+export const metadata: Metadata = {
+  title: 'Explore Communities - Amino',
+  description: 'Discover and join vibrant communities on Amino. Find your perfect community based on your interests, hobbies, and passions.',
+  keywords: 'communities, explore, discover, join community, amino communities',
+  openGraph: {
+    title: 'Explore Communities - Amino',
+    description: 'Discover and join vibrant communities on Amino. Find your perfect community based on your interests, hobbies, and passions.',
+    type: 'website',
+    images: [
+      {
+        url: '/og-explore.jpg', // Make sure to add this image to your public folder
+        width: 1200,
+        height: 630,
+        alt: 'Explore Amino Communities'
+      }
+    ]
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Explore Communities - Amino',
+    description: 'Discover and join vibrant communities on Amino. Find your perfect community based on your interests, hobbies, and passions.'
+  }
+}
 
 interface SearchParams {
   search?: string;

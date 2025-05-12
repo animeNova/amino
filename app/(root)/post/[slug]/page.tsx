@@ -1,10 +1,9 @@
 import { Metadata } from 'next';
-import { ChevronLeft, ChevronRight, Heart, MessageCircle, Share2, Bookmark, Sparkles } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { ChevronLeft, MessageCircle, Bookmark, Sparkles } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import RelatedPosts from "./related-posts"
 import CommentSection from "./comment-section"
 import Container from "@/components/ui/container"
 import ShareDialog from "../../../../components/ui/share-dialog"
@@ -15,6 +14,8 @@ import DOMPurify from 'isomorphic-dompurify';
 import { getNestedComments } from '@/app/actions/comments/get';
 import LikeButton from '@/components/posts/like';
 import { notFound } from 'next/navigation';
+import { formatDistanceToNow } from "date-fns"
+import FollowButton from '@/components/ui/followButton';
 
 interface AnimePostProps {
   params : {
@@ -58,7 +59,7 @@ export async function generateMetadata({ params }: AnimePostProps): Promise<Meta
 export default async function PostPage({params} : AnimePostProps) {
   const {slug} = await params;
   const post = await getPostById(slug)
-  const {comments,totalCount} = await getNestedComments(slug)
+  const {comments} = await getNestedComments(slug)
     // Get the host from headers
     const headersList =await headers();
     const host = headersList.get("host") ?? "localhost:3000";
@@ -97,7 +98,7 @@ export default async function PostPage({params} : AnimePostProps) {
         <div className="space-y-6">
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
-              {post?.post_tags.map((genre) => (
+              {post.post_tags.map((genre) => (
                 <Badge
                   key={genre}
                   variant="secondary"
@@ -108,7 +109,7 @@ export default async function PostPage({params} : AnimePostProps) {
               ))}
             </div>
             <h1 className="text-4xl font-bold text-primary">
-             {post?.post_title}
+             {post.post_title}
             </h1>
           </div>
 
@@ -117,7 +118,7 @@ export default async function PostPage({params} : AnimePostProps) {
             <div className="flex items-center gap-4">
               <div className="relative">
                 <Avatar className="h-12 w-12 border-2 border-primary">
-                  <UserAvatar url={post?.user_image!} className="w-full h-full" />
+                  <UserAvatar url={post.user_image} className="w-full h-full" />
                   <AvatarFallback>AS</AvatarFallback>
                 </Avatar>
                 <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs px-1 rounded-md font-medium">
@@ -126,22 +127,19 @@ export default async function PostPage({params} : AnimePostProps) {
               </div>
               <div>
                 <div className="flex items-center gap-1">
-                  <p className="font-bold text-lg">{post?.user_name}</p>
+                  <p className="font-bold text-lg">{post.user_name}</p>
                   <Sparkles className="h-4 w-4 text-yellow-500" />
                 </div>
-                <p className="text-sm text-muted-foreground">Posted on {post?.post_created_at.toLocaleDateString()}</p>
+                <p className="text-sm text-muted-foreground">Posted on {formatDistanceToNow(new Date(post.post_created_at), { addSuffix: true })}</p>
               </div>
             </div>
-            <Button variant="outline" className="gap-2">
-              <span>Follow</span>
-              <span className="text-xs text-muted-foreground">(2.4k)</span>
-            </Button>
+            <FollowButton profileUserId={post.user_id} />
           </div>
 
           {/* Featured Image */}
           <div className="relative aspect-video overflow-hidden rounded-lg border">
             <img
-              src={post?.post_image}
+              src={post.post_image}
               alt="Evolution of Anime"
               className="object-cover w-full"
             />
@@ -164,39 +162,14 @@ export default async function PostPage({params} : AnimePostProps) {
           <article 
             className="prose prose-lg dark:prose-invert max-w-none"
             dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(post?.post_content || '')
+              __html: DOMPurify.sanitize(post.post_content || '')
             }}
           />
-
-          {/* Author Bio */}
-          <div className="rounded-lg border p-6 mt-8">
-            <div className="flex items-start gap-4">
-              <Avatar className="h-16 w-16 border-2 border-primary">
-                  <UserAvatar url={post?.user_image!} className="w-full h-full" />
-                  <AvatarFallback>AS</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <h3 className="font-bold text-lg flex items-center gap-1">
-                      {post?.user_name}
-                      <Sparkles className="h-4 w-4 text-yellow-500" />
-                    </h3>
-                  </div>
-                  <Button>Follow</Button>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Passionate about analyzing anime's cultural impact and historical significance. Writing about anime,
-                  manga, and Japanese pop culture for over a decade.
-                </p>
-              </div>
-            </div>
-          </div>
 
           <Separator className="my-8" />
 
           {/* Comments Section */}
-          <CommentSection comments={comments} postId={post?.post_id!} />
+          <CommentSection comments={comments} postId={post.post_id} />
 
           {/* Related Posts */}
           {/* <RelatedPosts /> */}

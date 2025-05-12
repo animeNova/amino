@@ -11,6 +11,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
+import { useEffect } from "react"; // Added useEffect
+import { getFollowers, getFollowing } from "@/app/actions/follower/action"; // Import server actions
+import { Skeleton } from "@/components/ui/skeleton"; // For loading state
+import { useParams } from "next/navigation"; // Import useParams
+import FollowButton from "@/components/ui/followButton"
 
 interface User {
   username: string
@@ -18,56 +23,200 @@ interface User {
   avatar: string
 }
 
-interface FollowersDialogProps {
-  user: User
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  defaultTab?: "followers" | "following"
+// Updated User interface for the main user of the dialog
+interface DialogUser {
+  id: string; // Assuming the user object passed to dialog has an ID
+  username: string;
+  name: string | null;
+  avatar: string | null;
 }
 
-export function FollowersDialog({ user, open, onOpenChange, defaultTab = "followers" }: FollowersDialogProps) {
-  const { toast } = useToast()
-  const [searchQuery, setSearchQuery] = useState("")
-  const [followState, setFollowState] = useState<Record<number, boolean>>({})
-  const [activeTab, setActiveTab] = useState(defaultTab)
+// Interface for users in followers/following lists
+interface FetchedUser {
+  id: string;
+  name: string | null;
+  image?: string | null; // Corresponds to 'avatar'
+  // bio?: string | null; // If you need bio
+}
 
-  const handleFollow = (userId: number) => {
+interface FollowersDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  defaultTab?: "followers" | "following";
+}
+
+export function FollowersDialog({ open, onOpenChange, defaultTab = "followers" }: FollowersDialogProps) {
+  const { toast } = useToast();
+  const params = useParams(); // Get URL parameters
+  const userIdFromParams = params.slug as string; // This is the user ID from the slug
+
+  const [searchQuery, setSearchQuery] = useState("");
+  // Updated followState to use string IDs
+  const [followState, setFollowState] = useState<Record<string, boolean>>({});
+  const [activeTab, setActiveTab] = useState(defaultTab);
+
+  // State for fetched data, loading, and errors
+  const [followersList, setFollowersList] = useState<FetchedUser[]>([]);
+  const [followingList, setFollowingList] = useState<FetchedUser[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open || !userIdFromParams) { // Use userIdFromParams
+      // Reset lists if dialog is closed or userIdFromParams is not available
+      setFollowersList([]);
+      setFollowingList([]);
+      return;
+    }
+
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        if (activeTab === "followers") {
+          const result = await getFollowers(userIdFromParams); // Use userIdFromParams
+          if (result.success && result.data) {
+            // Assuming result.data matches FetchedUser structure (needs username)
+            setFollowersList(result.data.map(u => ({ ...u, username: u.name || 'unknown' }))); // Ensure username exists
+          } else {
+            setError(result.error || "Failed to load followers.");
+            setFollowersList([]);
+          }
+        } else if (activeTab === "following") {
+          const result = await getFollowing(userIdFromParams); // Use userIdFromParams
+          if (result.success && result.data) {
+            // Assuming result.data matches FetchedUser structure (needs username)
+            setFollowingList(result.data.map(u => ({ ...u, username: u.name || 'unknown' }))); // Ensure username exists
+          } else {
+            setError(result.error || "Failed to load following list.");
+            setFollowingList([]);
+          }
+        }
+      } catch (e) {
+        console.error("Error fetching follow data:", e);
+        setError("An unexpected error occurred.");
+        setFollowersList([]);
+        setFollowingList([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [open, activeTab, userIdFromParams]); // Use userIdFromParams in dependency array
+
+  // Updated to use string ID and new state lists
+  const handleFollow = (userId: string) => {
     setFollowState((prev) => ({
       ...prev,
       [userId]: !prev[userId],
-    }))
+    }));
 
-    const isFollowing = followState[userId]
+    const isNowFollowing = !followState[userId]; // State before this click
+    const targetUser = getFollowerById(userId);
+
     toast({
-      title: isFollowing ? "Unfollowed" : "Following",
-      description: isFollowing
-        ? `You have unfollowed ${getFollowerById(userId)?.name}`
-        : `You are now following ${getFollowerById(userId)?.name}`,
+      title: isNowFollowing ? "Following" : "Unfollowed",
+      description: isNowFollowing
+        ? `You are now following ${targetUser?.name || targetUser?.name}`
+        : `You have unfollowed ${targetUser?.name || targetUser?.name}`,
       variant: "default",
-    })
-  }
+    });
+    // In a real app, you'd call a server action here to update the follow status in the DB
+    // e.g., await followUserAction(userId) or await unfollowUserAction(userId)
+    // And then potentially re-fetch or update the list optimistically/realistically.
+  };
 
-  const getFollowerById = (id: number) => {
-    return [...followers, ...following].find((f) => f.id === id)
-  }
+  // Updated to use string ID and new state lists
+  const getFollowerById = (id: string): FetchedUser | undefined => {
+    return [...followersList, ...followingList].find((f) => f.id === id);
+  };
 
-  const filteredFollowers = followers.filter(
+  const filteredFollowers = followersList.filter(
     (follower) =>
-      follower.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      follower.username.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+      (follower.name && follower.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      follower.name?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
-  const filteredFollowing = following.filter(
+  const filteredFollowing = followingList.filter(
     (follow) =>
-      follow.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      follow.username.toLowerCase().includes(searchQuery.toLowerCase()),
-  )
+      (follow.name && follow.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      follow.name?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
+  const renderUserList = (list: FetchedUser[], type: "followers" | "following") => {
+    if (isLoading) {
+      return (
+        <div className="space-y-4 mt-4">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div className="space-y-1">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-3 w-16" />
+                </div>
+              </div>
+              <Skeleton className="h-8 w-20" />
+            </div>
+          ))}
+        </div>
+      );
+    }
+
+    if (error) {
+      return <div className="py-8 text-center text-destructive">{error}</div>;
+    }
+
+    if (list.length === 0) {
+      return (
+        <div className="py-8 text-center">
+          <p className="text-muted-foreground">
+            {searchQuery ? `No ${type} found matching your search.` : `This user has no ${type}.`}
+          </p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {list.map((item) => (
+          <div key={item.id} className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Avatar>
+                <AvatarImage src={item.image ?? undefined} alt={item.name || ''} />
+                <AvatarFallback>{(item.name)?.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <div>
+                <Link
+                  href={`/profile/${item.id}`}
+                  className="font-medium hover:underline"
+                  onClick={() => onOpenChange(false)}
+                >
+                  {item.name}
+                </Link>
+                <p className="text-sm text-muted-foreground">@{item.name}</p>
+              </div>
+            </div>
+            {/* Button logic needs to consider if the current logged-in user is viewing their own profile 
+                or someone else's. For simplicity, this example assumes you can always (un)follow.
+                Also, the button for the "following" tab should typically be "Unfollow".
+            */}
+            <FollowButton profileUserId={item.id}  />
+             {/* For the "Following" tab, the button should primarily be an "Unfollow" button if already following */}
+             {/* This part of the logic might need refinement based on whether the logged-in user is the one being viewed */}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] max-h-[80vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>{user.name}'s Network</DialogTitle>
+          <DialogTitle>Profile</DialogTitle> {/* Use profileUsername for title */}
         </DialogHeader>
 
         <div className="mb-4 mt-2">
@@ -92,98 +241,23 @@ export function FollowersDialog({ user, open, onOpenChange, defaultTab = "follow
             <TabsTrigger value="followers">
               Followers{" "}
               <Badge variant="secondary" className="ml-2">
-                {followers.length}
+                {isLoading && activeTab === 'followers' ? '...' : followersList.length}
               </Badge>
             </TabsTrigger>
             <TabsTrigger value="following">
               Following{" "}
               <Badge variant="secondary" className="ml-2">
-                {following.length}
+                 {isLoading && activeTab === 'following' ? '...' : followingList.length}
               </Badge>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="followers" className="flex-1 overflow-auto mt-4">
-            {filteredFollowers.length === 0 ? (
-              <div className="py-8 text-center">
-                <p className="text-muted-foreground">No followers found matching your search.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredFollowers.map((follower) => (
-                  <div key={follower.id} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src={follower.avatar} alt={follower.name} />
-                        <AvatarFallback>{follower.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <Link
-                          href={`/profile/${follower.username}`}
-                          className="font-medium hover:underline"
-                          onClick={() => onOpenChange(false)}
-                        >
-                          {follower.name}
-                        </Link>
-                        <p className="text-sm text-muted-foreground">@{follower.username}</p>
-                      </div>
-                    </div>
-                    <Button
-                      variant={followState[follower.id] ? "outline" : "default"}
-                      size="sm"
-                      onClick={() => handleFollow(follower.id)}
-                    >
-                      {followState[follower.id] ? (
-                        <>
-                          <UserCheck className="h-4 w-4 mr-2" />
-                          Following
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="h-4 w-4 mr-2" />
-                          Follow
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
+            {renderUserList(filteredFollowers, "followers")}
           </TabsContent>
 
           <TabsContent value="following" className="flex-1 overflow-auto mt-4">
-            {filteredFollowing.length === 0 ? (
-              <div className="py-8 text-center">
-                <p className="text-muted-foreground">No following found matching your search.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {filteredFollowing.map((follow) => (
-                  <div key={follow.id} className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src={follow.avatar} alt={follow.name} />
-                        <AvatarFallback>{follow.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <Link
-                          href={`/profile/${follow.username}`}
-                          className="font-medium hover:underline"
-                          onClick={() => onOpenChange(false)}
-                        >
-                          {follow.name}
-                        </Link>
-                        <p className="text-sm text-muted-foreground">@{follow.username}</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => handleFollow(follow.id)}>
-                      <UserCheck className="h-4 w-4 mr-2" />
-                      Following
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
+            {renderUserList(filteredFollowing, "following")}
           </TabsContent>
         </Tabs>
       </DialogContent>
@@ -191,71 +265,7 @@ export function FollowersDialog({ user, open, onOpenChange, defaultTab = "follow
   )
 }
 
-// Mock data for followers
-const followers = [
-  {
-    id: 1,
-    name: "Maria Garcia",
-    username: "mariagarcia",
-    avatar: "/placeholder.svg?text=MG",
-  },
-  {
-    id: 2,
-    name: "Tom Wilson",
-    username: "tomwilson",
-    avatar: "/placeholder.svg?text=TW",
-  },
-  {
-    id: 3,
-    name: "Emma Thompson",
-    username: "emmathompson",
-    avatar: "/placeholder.svg?text=ET",
-  },
-  {
-    id: 4,
-    name: "David Lee",
-    username: "davidlee",
-    avatar: "/placeholder.svg?text=DL",
-  },
-  {
-    id: 5,
-    name: "Sarah Chen",
-    username: "sarahchen",
-    avatar: "/placeholder.svg?text=SC",
-  },
-]
-
-// Mock data for following
-const following = [
-  {
-    id: 6,
-    name: "Jamie Oliver",
-    username: "jamieoliver",
-    avatar: "/placeholder.svg?text=JO",
-  },
-  {
-    id: 7,
-    name: "Gordon Ramsay",
-    username: "gordonramsay",
-    avatar: "/placeholder.svg?text=GR",
-  },
-  {
-    id: 8,
-    name: "Elon Musk",
-    username: "elonmusk",
-    avatar: "/placeholder.svg?text=EM",
-  },
-  {
-    id: 9,
-    name: "Bill Gates",
-    username: "billgates",
-    avatar: "/placeholder.svg?text=BG",
-  },
-  {
-    id: 10,
-    name: "Mark Zuckerberg",
-    username: "markzuckerberg",
-    avatar: "/placeholder.svg?text=MZ",
-  },
-]
+// Remove the mock data arrays:
+// const followers = [ ... ]
+// const following = [ ... ]
 

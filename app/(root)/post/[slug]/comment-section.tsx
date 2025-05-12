@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo, useCallback, memo } from "react"
+import { useState, useCallback, memo } from "react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
@@ -10,6 +10,7 @@ import { formatDistanceToNow } from "date-fns"
 import { NestedComment } from "@/types/comments"
 import { createComment } from "@/app/actions/comments/create";
 import { useRouter } from "next/navigation"
+import { toast } from "@/hooks/use-toast"
 
 interface CommentSectionProps {
   comments: NestedComment[];
@@ -144,35 +145,73 @@ export default function CommentSection({ comments, postId }: CommentSectionProps
   const [newComment, setNewComment] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const router = useRouter();
+
   const handleSubmitComment = async () => {
     if (!newComment.trim()) return;
     
+    setIsSubmitting(true);
     try {
-      setIsSubmitting(true);
-      await createComment(postId, {
+      const result = await createComment(postId, {
         content: newComment
       });
       
-      setNewComment(""); // Clear the input
-      // You might want to refresh the comments list here
+      if (result.success) {
+        setNewComment(""); // Clear the input
+        toast({
+          title: "Success",
+          description: "Your comment has been posted.",
+        });
+        router.refresh(); // Refresh to show the new comment
+      } else {
+        // Handle error from server action
+        toast({
+          title: "Error",
+          description: result.error ?? "Failed to post comment.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
+      // Catch any unexpected errors (e.g., network issues)
       console.error('Error creating comment:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "An unexpected error occurred.",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
-      router.refresh()
     }
   }
 
   const handleSubmitReply = async (parentId: string, content: string) => {
+    // It's good practice to also handle submission state for replies if it can take time
+    // For simplicity, I'm omitting setIsSubmitting for replies here, but you might want to add it.
     try {
-      await createComment(postId, {
+      const result = await createComment(postId, {
         content,
         parentId
       });
-      router.refresh()
-      // You might want to refresh the comments list here
+
+      if (result.success) {
+        toast({
+          title: "Success",
+          description: "Your reply has been posted.",
+        });
+        router.refresh(); // Refresh to show the new reply
+      } else {
+        toast({
+          title: "Error",
+          description: result.error ?? "Failed to post reply.",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       console.error('Error creating reply:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "An unexpected error occurred while replying.",
+        variant: "destructive"
+      });
     }
   }
 

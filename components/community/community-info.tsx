@@ -1,5 +1,5 @@
 'use client';
-import { Bell, MoreHorizontal, Users, MessageCircle } from "lucide-react"
+import { Bell, MoreHorizontal, Users, MessageCircle, SquareChartGantt } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -8,6 +8,8 @@ import CommunityJoin from "./community-join"
 import ShareDialog from "../ui/share-dialog"
 import useCreatePostDialogStore from "@/store/useCreatePostDialog";
 import { useEffect, useState } from "react";
+import UserAvatar from "../ui/user-avatar";
+import Link from "next/link";
 
 interface CommunityInfoProps {
   community: {
@@ -18,9 +20,11 @@ interface CommunityInfoProps {
     memberCount: string
     avatar: string
     staff: {
-      name: string
-      role: string
-      avatar: string
+      memberId : string,      // ID of the member record
+      role : string,                // Role of the member in the community
+      userId : string,   // ID of the user
+      userName:string;      // Name of the user
+      userImage?:string;
     }[]
   },
   isMember : boolean;
@@ -70,7 +74,7 @@ export function CommunityInfo({ community, isMember, canManage}: CommunityInfoPr
               <CommunityJoin communityId={community.id} size="sm"/>
             )
           }
-          {/* {
+          {
             canManage && (
               <Link href={`/dashboard/community/${community.id}`}>
               <Button variant="outline" size={'sm'}>
@@ -78,7 +82,7 @@ export function CommunityInfo({ community, isMember, canManage}: CommunityInfoPr
               </Button>
               </Link>
             )
-          } */}
+          }
             <Button variant="outline" size={'sm'}>
             <Bell className="h-6 w-4" />
           </Button>
@@ -89,14 +93,14 @@ export function CommunityInfo({ community, isMember, canManage}: CommunityInfoPr
           <h4 className="text-sm font-medium">Community Staff</h4>
           <div className="space-y-2">
             {community.staff.map((staff) => (
-              <div key={staff.name} className="flex items-center justify-between">
+              <div key={staff.userName} className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={staff.avatar} />
-                    <AvatarFallback>{staff.name[0]}</AvatarFallback>
+                    <UserAvatar url={staff.userImage} className="h-full w-full" />
+                    <AvatarFallback>{staff.userName[0]}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="text-sm font-medium leading-none">{staff.name}</p>
+                    <p className="text-sm font-medium leading-none">{staff.userName}</p>
                     <p className="text-sm text-muted-foreground">{staff.role}</p>
                   </div>
                 </div>
