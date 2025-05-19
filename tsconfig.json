@@ -22,6 +22,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "knexfile.js", "db/migrations/20250217150606_create_users_table.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "knexfile.js", "db/migrations/20250217150606_create_users_table.js", "db/communities.ts"],
   "exclude": ["node_modules"]
 }

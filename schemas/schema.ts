@@ -78,3 +78,48 @@ export const updateUserSchema = z.object({
     location: z.string().max(100, "Location cannot exceed 100 characters").optional(),
     website: z.string().url().optional(),
 })
+
+
+
+/**
+ * Chat Room Schemas
+ */
+export const baseChatRoomSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, "Room name is required").max(50, "Room name cannot exceed 50 characters"),
+  description: z.string().max(200, "Description cannot exceed 200 characters").optional(),
+  image: z.string().url("Please enter a valid URL for the room image").optional().nullable(),
+  type: z.enum(['public', 'private', 'direct'], {
+    message: "Room type must be either public, private, or direct"
+  }).default('public'),
+  community_id: z.string().nonempty("Community is required")
+});
+
+// Unified schema for both create and update
+export const chatRoomSchema = baseChatRoomSchema;
+
+// Define our type
+export type ChatRoomFormInput = z.infer<typeof chatRoomSchema>;
+
+/**
+ * Chat Message Schemas
+ */
+export const baseChatMessageSchema = z.object({
+  id: z.string().optional(),
+  content: z.string().min(1, "Message content is required").max(2000, "Message cannot exceed 2000 characters"),
+  attachments: z.any().optional().nullable(),
+  type: z.string().default('text'),
+  room_id: z.string().nonempty("Chat room is required"),
+  reply_to: z.string().optional().nullable()
+});
+
+// Unified schema for both create and update
+export const chatMessageSchema = baseChatMessageSchema;
+
+// Define our type
+export type ChatMessageFormInput = z.infer<typeof chatMessageSchema>;
+
+// Schema for updating a message (only content can be updated)
+export const updateChatMessageSchema = z.object({
+  content: z.string().min(1, "Message content is required").max(2000, "Message cannot exceed 2000 characters"),
+});

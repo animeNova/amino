@@ -11,6 +11,7 @@ import { isCommunityMember, isCommunityModerator } from "@/utils/permissions"
 import { auth } from "@/lib/auth"
 import { headers } from "next/headers"
 import { getPostsByCommunity } from "@/app/actions/posts/get"
+import { getChatRoomsByCommunity } from "@/app/actions/chat-rooms/get"
 import PostList from "../posts/post-list"
 import { GetCommunityByHandlerResult } from "@/app/actions/community/get"
 interface CommunityPageProps {
@@ -23,7 +24,9 @@ export default async function CommunityPage({community} :Readonly<CommunityPageP
     const isMember = await isCommunityMember(user?.user.id!,community.id)
     const canManage = await isCommunityModerator(user?.user.id!,community.id)
     const {posts} = await getPostsByCommunity(community.id)
-  return (
+    const {rooms} = await getChatRoomsByCommunity(community.id)
+    
+    return (
     <div className="min-h-screen bg-background">
      <Container>
      <div className="relative h-48 w-full">
@@ -38,7 +41,7 @@ export default async function CommunityPage({community} :Readonly<CommunityPageP
             name : community.name,
             handle : community.handle,
             description : community.description,
-            memberCount : "12.3k",
+            memberCount :Number(community.memberCount) ?? 0,
             staff: community.staff,
           }} 
           isMember={isMember}
@@ -64,6 +67,10 @@ export default async function CommunityPage({community} :Readonly<CommunityPageP
         <ScrollArea className="h-[calc(100vh-5rem)]">
           <PostList posts={posts} className="grid grid-cols-1 gap-4 w-full" />
         </ScrollArea>
+        </div>
+                {/* Right Sidebar - Chat Rooms */}
+        <div className="md:col-span-3 space-y-6">
+          <ChatRooms rooms={rooms} communityId={community.id} />
         </div>
       </div>
       </Container>
@@ -91,5 +98,6 @@ const communityRules = [
     description: "Do not spam or post excessive self-promotion.",
   },
 ]
+
 
 

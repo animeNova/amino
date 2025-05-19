@@ -17,7 +17,7 @@ interface CommunityInfoProps {
     name: string
     handle: string
     description: string
-    memberCount: string
+    memberCount: number;
     avatar: string
     staff: {
       memberId : string,      // ID of the member record

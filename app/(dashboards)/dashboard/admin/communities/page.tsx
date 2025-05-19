@@ -20,7 +20,10 @@ export default async function CommunitiesPage({
   const SearchParams = await searchParams;
   const page = SearchParams.page ?? 1;
   const search = SearchParams.search ?? "";
-  const {communities,totalPages,totalCount} =await getCommunitys();
+  const {communities,totalPages,totalCount} =await getCommunitys({
+    offset : page ,
+    search : search ,
+  });
   return (
 
 
@@ -105,19 +108,11 @@ export default async function CommunitiesPage({
                     Showing <strong>{communities.length}</strong> of <strong>{communities.length}</strong>{" "}
                     communities
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Button variant="outline" size="sm" disabled>
-                      Previous
-                    </Button>
-                    <Button variant="outline" size="sm">
-                      Next
-                    </Button>
-                  </div>
                 </div>
               </Card>
             </div>
           </div>
-          <PaginationButtons currentPage={page ?? 0} totalPages={totalPages} />
+          <PaginationButtons currentPage={page ?? 1} totalPages={totalPages} />
 
         </div>
   )

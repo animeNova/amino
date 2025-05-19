@@ -13,12 +13,18 @@ const nextConfig: NextConfig = {
       {
         hostname : 'sapphire-changing-rodent-630.mypinata.cloud'
       },
+      {
+        hostname : 'images.unsplash.com'
+      },
+      {
+        hostname : 'picsum.photos'
+      },
     ]
   },
   experimental :{
     authInterrupts : true
   },
-  transpilePackages : ['isomorphic-dompurify']
+  transpilePackages : ['isomorphic-dompurify' , 'keyv']
 };
 
 export default nextConfig;

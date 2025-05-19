@@ -37,6 +37,9 @@ export function MemberRoleDropdown({ memberId, currentRole , communityId }: Memb
   const [role, setRole] = useState(currentRole)
   const [isChanging, setIsChanging] = useState(false)
   const router = useRouter()
+  console.log("communityId", communityId);
+  console.log("memberId", memberId);
+  
   const handleRoleChange = async (newRole: string) => {
     if (newRole === role) {
       setOpen(false)

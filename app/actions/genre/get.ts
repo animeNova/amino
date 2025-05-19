@@ -59,7 +59,7 @@ export const getGenres = async (options: GetGenresOptions = {}): Promise<GetGenr
     
         // Execute the main query
         const genres = await query.execute();
-        const totalPages = Math.ceil(genres.length / limit); // Calculate total pages
+        const totalPages = Math.ceil(totalCount / limit); // Calculate total pages
 
         return {
             genres,

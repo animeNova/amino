@@ -30,6 +30,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { GenreResult, getGenres } from "@/app/actions/genre/get"
 // Filter types
 export type FilterOptions = {
     search: string
@@ -82,7 +83,7 @@ interface MobileFilterBarProps {
 export function FilterBar({ initialFilters, className = "" }: MobileFilterBarProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  
+  const [genres,SetGenres] = useState<GenreResult[]>([])
   // Initialize filters from URL params or defaults
   const [filters, setFilters] = useState<FilterOptions>({
     search: searchParams.get("search") || initialFilters?.search || "",
@@ -96,7 +97,13 @@ export function FilterBar({ initialFilters, className = "" }: MobileFilterBarPro
       ? (searchParams.get("activities")!.split(",") as FilterOptions["activities"]) 
       : initialFilters?.activities || [],
   })
-  
+  useEffect(() => {
+    const fetchGenres = async () => {
+      const {genres} = await getGenres()
+      SetGenres(genres)
+    }
+    fetchGenres()
+  },[])
   const debouncedSearch = useDebounce(filters.search, 500)
   
   // Use the useUpdateSearchParam hook for each filter parameter
@@ -226,7 +233,7 @@ export function FilterBar({ initialFilters, className = "" }: MobileFilterBarPro
         </DropdownMenu>
 
         {/* Time range dropdown */}
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="h-8">
               {filters.timeRange === "today"
@@ -249,7 +256,7 @@ export function FilterBar({ initialFilters, className = "" }: MobileFilterBarPro
               <DropdownMenuRadioItem value="all">All Time</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
 
         {/* Active genre filters */}
         {activeGenres.map((genre : any) => (
@@ -288,28 +295,28 @@ export function FilterBar({ initialFilters, className = "" }: MobileFilterBarPro
                 <div className="space-y-4">
                   <h4 className="font-medium">Genres</h4>
                   <div className="grid grid-cols-2 gap-2">
-                    {genreOptions.map((genre) => (
-                      <div key={genre} className="flex items-center space-x-2">
+                    {genres.map((genre) => (
+                      <div key={genre.id} className="flex items-center space-x-2">
                         <Checkbox
-                          id={`mobile-genre-${genre}`}
-                          checked={filters.genres.includes(genre)}
-                          onCheckedChange={(checked) => handleGenreChange(genre, checked === true)}
+                          id={`mobile-genre-${genre.name}`}
+                          checked={filters.genres.includes(genre.name)}
+                          onCheckedChange={(checked) => handleGenreChange(genre.name, checked === true)}
                         />
                         <label
-                          htmlFor={`mobile-genre-${genre}`}
+                          htmlFor={`mobile-genre-${genre.name}`}
                           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                         >
-                          {genre}
+                          {genre.name}
                         </label>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <Separator />
+                {/* <Separator /> */}
 
                 {/* Community size section */}
-                <div className="space-y-4">
+                {/* <div className="space-y-4">
                   <h4 className="font-medium">Community Size</h4>
                   <div className="grid grid-cols-1 gap-2">
                     {sizeOptions.map((size) => (
@@ -328,19 +335,19 @@ export function FilterBar({ initialFilters, className = "" }: MobileFilterBarPro
                       </div>
                     ))}
                   </div>
-                </div>
+                </div> */}
 
-                <Separator />
+                {/* <Separator /> */}
 
                 {/* Activity level section */}
-                <div className="space-y-4">
+                {/* <div className="space-y-4">
                   <h4 className="font-medium">Activity Level</h4>
                   <div className="grid grid-cols-1 gap-2">
                     {activityOptions.map((activity) => (
                       <div key={activity.id} className="flex items-center space-x-2">
                         <Checkbox
                           id={`mobile-activity-${activity.id}`}
-                          checked={filters.activities.includes(activity.label as any)}
+                          checked={filters.activities.includes(activity.id as any)}
                           onCheckedChange={(checked) => handleActivityChange(activity.id, checked === true)}
                         />
                         <label
@@ -352,7 +359,7 @@ export function FilterBar({ initialFilters, className = "" }: MobileFilterBarPro
                       </div>
                     ))}
                   </div>
-                </div>
+                </div> */}
               </div>
             </ScrollArea>
             <SheetFooter className="flex-row justify-between gap-3 pt-2">

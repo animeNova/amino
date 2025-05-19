@@ -45,17 +45,24 @@ export default async function ExplorePage({
   searchParams: SearchParams;
 }>) {
   const serviceParams = await searchParams;
-  const { activities,genres,page,search,sizes,sort,timeRange } =serviceParams;
-  const {communities,totalCount,totalPages} = await getCommunitys({
-    search : search ,
-    offset : page ?? 1
+  const { activities, genres, page, search, sizes, sort, timeRange } = serviceParams;
+  const genresArr = genres?.split(",") ?? [];
+  const activitiesArr = activities?.split(",").filter((activity): activity is "very-active" | "active" | "moderate" | "low" => {
+    return ["very-active", "active", "moderate", "low"].includes(activity);
+  }) ?? [];
+
+  const {communities, totalCount, totalPages, hasMore} = await getCommunitys({
+    search: search,
+    offset: page ?? 1,
+    limit: 6,
+    genres: genresArr,
+    activities: activitiesArr,
   })
 
   return (
     <Container>
     <div className="container py-8">
       <div className="flex flex-col gap-6 md:flex-row">
-        {/* Desktop filter sidebar as a regular aside element - hidden on mobile */}
      
 
         {/* Main content area */}
@@ -81,7 +88,7 @@ export default async function ExplorePage({
               </div>
             </Suspense>
             <PaginationButtons currentPage={page ?? 1} totalPages={totalPages} />
-          </div>
+            </div>
         </main>
       </div>
     </div>

@@ -9,7 +9,9 @@ import React from 'react'
 
 
 const index =async () => {
-  const {communities} =await getCommunitys()
+  const {communities} =await getCommunitys({
+    limit : 6
+  })
   
   return (
     <section className="container py-8 md:py-12">

@@ -47,19 +47,39 @@ export const getPostsByCommunity = async (communityId : string,options: GetPosts
     const orderBy = options.orderBy?? 'desc';
     const userId = await getUserIdSafe();
     try {
+        // First, get distinct post IDs with pagination
+        const postIds = await db
+            .selectFrom('posts as p')
+            .where('p.status', '=', 'accepted')
+            .where('p.community_id', '=', communityId)
+            .select('p.id')
+            .orderBy('p.created_at', orderBy || 'desc')
+            .limit(limit)
+            .offset(offset)
+            .execute();
+
+        // If no posts found, return early
+        if (postIds.length === 0) {
+            return {
+                posts: [],
+                totalCount: 0,
+                hasMore: false
+            };
+        }
+
+        // Then get the full post data for these IDs
         let baseQuery = db
-        .selectFrom('posts as p')
-        .where('p.status', '=', 'accepted')
-        .where('p.community_id', '=', communityId)
-        .innerJoin('community', 'p.community_id', 'community.id')
-        .innerJoin('user', 'p.user_id', 'user.id')
-        .leftJoin('user_levels as ul', 'user.id', 'ul.user_id')
-        .leftJoin('members', join => 
-          join.onRef('user.id', '=', 'members.user_Id')
-              .onRef('p.community_id', '=', 'members.communityId')
-        )
-        
-        .select([
+            .selectFrom('posts as p')
+            .where('p.status', '=', 'accepted')
+            .where('p.id', 'in', postIds.map(p => p.id))
+            .innerJoin('community', 'p.community_id', 'community.id')
+            .innerJoin('user', 'p.user_id', 'user.id')
+            .leftJoin('user_levels as ul', 'user.id', 'ul.user_id')
+            .leftJoin('members', join => 
+                join.onRef('user.id', '=', 'members.user_Id')
+                    .onRef('p.community_id', '=', 'members.communityId')
+            )
+            .select([
         // post fields
         'p.id as post_id',
         'p.title as post_title',
@@ -214,116 +234,7 @@ export async function getPostById(id: string) {
       throw new Error('Failed to fetch post');
     }
 }
-export const getPosts = async (options: GetPostsOptions = {}): Promise<GetPostsResult> => {
-    const limit = options.limit ?? 10;
-    const offset = options.offset ?? 0;
-    const search = options.search ?? null;
-    const tag = options.tag ?? null;
-    const orderBy = options.orderBy ?? 'desc';
-    const userId = await getUserIdSafe();
 
-    try {
-        let baseQuery = db
-            .selectFrom('posts as p')
-            .where('p.status', '=', 'accepted')
-            .innerJoin('community', 'p.community_id', 'community.id')
-            .innerJoin('user', 'p.user_id', 'user.id')
-            .leftJoin('user_levels as ul', 'user.id', 'ul.user_id')
-            .leftJoin('members', join => 
-              join.onRef('user.id', '=', 'members.user_Id')
-                  .onRef('p.community_id', '=', 'members.communityId')
-            )
-            .select([
-                // post fields
-                'p.id as post_id',
-                'p.title as post_title',
-                'p.content as post_content',
-                'p.image as post_image',
-                'p.tags as post_tags',
-                'p.user_id as post_user_id',
-                'p.community_id as post_community_id',
-                'p.status as post_status',
-                'p.created_at as post_created_at',
-
-                // community fields
-                'community.id as community_id',
-                'community.name as community_name',
-                'community.image as community_image',
-                'community.handle as communityHandle',
-
-                // member role
-                'members.role as memberRole',
-                // User level fields
-                'ul.level as userLevel',
-
-                // user fields
-                'user.id as user_id',
-                'user.name as user_name',
-                'user.image as user_image',
-
-                // Like status and count
-                eb => eb.selectFrom('post_likes as pl')
-                    .whereRef('pl.post_id', '=', 'p.id')
-                    .where('pl.user_id', '=', userId)
-                    .select('pl.post_id')
-                    .limit(1)
-                    .as('isLiked'),
-                eb => eb.selectFrom('post_likes as pl')
-                    .whereRef('pl.post_id', '=', 'p.id')
-                    .select(eb => eb.fn.count<number>('pl.user_id').as('count'))
-                    .as('likeCount'),
-                    
-                    // Add comment count
-                    eb => eb.selectFrom('comments as c')
-                    .whereRef('c.post_id', '=', 'p.id')
-                    .select(eb => eb.fn.count<number>('c.id').as('count'))
-                    .as('commentCount')
-            ]);
-
-        if (search) {
-            baseQuery = baseQuery.where('p.title', 'like', `%${search}%`);
-        }
-        if (tag) {
-            baseQuery = baseQuery.where('p.tags', '@>', [tag]);
-        }
-        if (orderBy) {
-            baseQuery = baseQuery.orderBy('p.created_at', orderBy);
-        }
-
-        // Create a separate count query
-        const countQuery = db
-            .selectFrom('posts as p')
-            .where('p.status', '=', 'accepted');
-
-        if (search) {
-            countQuery.where('p.title', 'like', `%${search}%`);
-        }
-        if (tag) {
-            countQuery.where('p.tags', '@>', [tag]);
-        }
-
-        const countResult = await countQuery
-            .select(eb => eb.fn.count<number>('p.id').as('count'))
-            .executeTakeFirst();
-
-        const totalCount = Number(countResult?.count ?? 0);
-
-        // Apply pagination to the main query
-        const posts = await baseQuery
-            .limit(limit)
-            .offset(offset)
-            .execute();
-
-        return {
-            posts,
-            totalCount,
-            hasMore: offset + posts.length < totalCount
-        };
-    } catch (error) {
-        console.error('Error fetching posts:', error);
-        throw new Error('Failed to fetch posts');
-    }
-}
 
 
 export const getPostsByUser = async (targetUserId: string, options: GetPostsOptions = {}): Promise<GetPostsResult> => {

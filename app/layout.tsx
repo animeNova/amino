@@ -7,6 +7,8 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
+import { AblyClientProvider } from '@/lib/ably';
+import { cn } from "@/lib/utils";
 const geistInter = Inter({
     subsets : ['latin'] ,
     weight : ['400','500','900']
@@ -23,12 +25,12 @@ export default async function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${geistInter.className}  antialiased`}
-      >
-        {children}
-        <Toaster />
-        <CreatePostDialog />
+      <body className={cn('min-h-screen bg-background font-sans antialiased', geistInter.className)}>
+          <AblyClientProvider>
+            {children}
+            <Toaster />
+            <CreatePostDialog />
+          </AblyClientProvider>
       </body>
     </html>
   );

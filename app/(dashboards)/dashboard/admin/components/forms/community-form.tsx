@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { Globe, Lock, Upload } from "lucide-react"
@@ -18,7 +18,7 @@ import { useUpload } from "@/hooks/useUpload"
 import Image from "next/image"
 // Import the base schema instead of the discriminated union
 import { CommunityFormInput, communitySchema} from "@/schemas/schema"
-import { useGenres } from "@/hooks/actions/genres/useGenres"
+import { GenreResult, getGenres, GetGenresResult } from "@/app/actions/genre/get"
 
 
 
@@ -52,11 +52,17 @@ export function CommunityForm({
   isEditMode = false,
   isLoading,
 }: Readonly<CommunityFormProps>) {
-  const {results} = useGenres();
   const { toast } = useToast()
   const [imagePreview, setImagePreview] = useState<string | null>(initialData?.image ?? null)
   const [bannerPreview, setBannerPreview] = useState<string | null>(initialData?.banner ?? null)
-  
+  const [genres , SetGenres] = useState<GenreResult[]>([])
+  useEffect(() => {
+    const getAllGenres = async () => {
+      const { genres : result } = await getGenres()
+      SetGenres(result)
+    };
+    getAllGenres()
+  },[])
   // Add the upload hooks
   const imageUpload = useUpload()
   const bannerUpload = useUpload()
@@ -261,7 +267,7 @@ export function CommunityForm({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {results?.genres.map((genre) => (
+                        {genres?.map((genre) => (
                           <SelectItem key={genre.id} value={genre.id}>
                             {genre.name}
                           </SelectItem>

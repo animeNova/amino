@@ -147,3 +147,45 @@ export const getJoinRequestByUserId = async (): Promise<JoinRequestResult[] | nu
         throw new Error('Failed to fetch join request');
     }
 }
+
+/**
+ * Check if a user is a member of a specific community
+ * @param userId The ID of the user to check
+ * @param communityId The ID of the community to check
+ * @returns The member record if the user is a member, null otherwise
+ */
+export const isCommunityMember = async (userId: string, communityId: string) => {
+    try {
+        if (!userId || !communityId) {
+            return null;
+        }
+        
+        const member = await db
+            .selectFrom('members')
+            .where('user_Id', '=', userId)
+            .where('communityId', '=', communityId)
+            .select(['id', 'role', 'joined_at'])
+            .executeTakeFirst();
+            
+        return member || null;
+    } catch (error) {
+        console.error('Error checking community membership:', error);
+        return null; // Return null on error to prevent blocking UI
+    }
+}
+
+// If you want to check for the current user, you can create a convenience function:
+export const isCurrentUserCommunityMember = async (communityId: string) => {
+    try {
+        const userId = await getUserId();
+        
+        if (!userId) {
+            return null;
+        }
+        
+        return isCommunityMember(userId, communityId);
+    } catch (error) {
+        console.error('Error checking current user community membership:', error);
+        return null;
+    }
+}

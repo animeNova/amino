@@ -6,8 +6,7 @@ import { Separator } from "@/components/ui/separator"
 import React, { useEffect, useState, useTransition } from "react"
 import { CommunityForm } from "../../../components/forms/community-form"
 import { toast } from "@/hooks/use-toast";
-import { Community } from "@/db/types";
-import { getCommunityById } from "@/app/actions/community/get";
+import { CommunityResult, getCommunityById } from "@/app/actions/community/get";
 import { UpdateCommunityAction } from "@/app/actions/community/update";
 
 
@@ -17,7 +16,7 @@ export default function CreateCommunityPage(){
   const params = useParams();
   const id = params.id as string;
   const [isPending, startTransition] = useTransition();
-  const [communityQuery, setCommunityQuery] = useState<Community>();
+  const [communityQuery, setCommunityQuery] = useState<CommunityResult>();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 

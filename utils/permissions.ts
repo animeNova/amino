@@ -358,3 +358,245 @@ export async function canChangeMemberRole(userId: string, communityId: string): 
     
   return !!member;
 }
+
+
+/**
+ * Check if a user can delete a member from a community
+ * - System admins can delete any member except other admins
+ * - Community admins can delete moderators and regular members, but not other admins
+ * - Moderators can only delete regular members
+ * - Regular members cannot delete anyone
+ * - Any user can delete themselves (leave a community)
+ * 
+ * @param currentUserId The ID of the user attempting to delete the member
+ * @param memberId The ID of the member to be deleted
+ * @param communityId The ID of the community
+ * @returns Boolean indicating if the user has permission to delete the member
+ */
+export async function canDeleteMember(currentUserId: string, memberId: string, communityId: string): Promise<boolean> {
+  // Users can always remove themselves (leave a community)
+  const memberToDelete = await db
+    .selectFrom('members')
+    .where('id', '=', memberId)
+    .where('communityId', '=', communityId)
+    .select(['user_Id', 'role'])
+    .executeTakeFirst();
+    
+  if (!memberToDelete) return false;
+  
+  // Self-removal is always allowed
+  const isSelfRemoval = memberToDelete.user_Id === currentUserId;
+  if (isSelfRemoval) return true;
+  
+  // Check if the current user is a system admin
+  const isAdmin = await isSystemAdmin(currentUserId);
+  if (isAdmin && memberToDelete.role !== 'admin') return true;
+  
+  // Get the current user's role in this community
+  const currentUserRole = await db
+    .selectFrom('members')
+    .where('user_Id', '=', currentUserId)
+    .where('communityId', '=', communityId)
+    .select('role')
+    .executeTakeFirst();
+    
+  if (!currentUserRole) return false;
+  
+  // Permission rules based on roles
+  if (currentUserRole.role === 'admin') {
+    // Admins can delete moderators and regular members, but not other admins
+    return memberToDelete.role !== 'admin';
+  } else if (currentUserRole.role === 'moderator') {
+    // Moderators can only delete regular members
+    return memberToDelete.role === 'member';
+  }
+  
+  // Regular members cannot delete anyone
+  return false;
+}
+
+/**
+ * Chat Permissions
+ */
+
+/**
+ * Check if a user can create a chat message in a community
+ * - User must be a member of the community to send messages
+ */
+export async function canCreateChatMessage(userId: string, communityId: string): Promise<boolean> {
+  // Check if the user is a member of the community
+  const isMember = await isCommunityMember(userId, communityId);
+  return isMember;
+}
+
+/**
+ * Check if a user can read chat messages in a community
+ * - User must be a member of the community to read messages
+ */
+export async function canReadChatMessages(userId: string, communityId: string): Promise<boolean> {
+  // Check if the user is a member of the community
+  const isMember = await isCommunityMember(userId, communityId);
+  return isMember;
+}
+
+/**
+ * Check if a user can update their own chat message
+ * - User can only edit their own messages
+ */
+export async function canUpdateChatMessage(userId: string, messageId: string): Promise<boolean> {
+  // Check if the user is the author of the message
+  const message = await db
+    .selectFrom('chat_messages')
+    .where('id', '=', messageId)
+    .where('user_id', '=', userId)
+    .select('id')
+    .executeTakeFirst();
+    
+  return !!message;
+}
+
+/**
+ * Check if a user can delete a chat message
+ * - User can delete their own messages
+ * - Community moderators and admins can delete any message
+ * - System admins can delete any message
+ */
+export async function canDeleteChatMessage(userId: string, messageId: string): Promise<boolean> {
+  // First, check if the user is the message author
+  const isAuthor = await db
+    .selectFrom('chat_messages')
+    .where('id', '=', messageId)
+    .where('user_id', '=', userId)
+    .select('id')
+    .executeTakeFirst();
+    
+  if (isAuthor) return true;
+  
+  // Check if user is a system admin
+  const isAdmin = await isSystemAdmin(userId);
+  if (isAdmin) return true;
+  
+  // Get the message details to check community permissions
+  const message = await db
+    .selectFrom('chat_messages')
+    .where('id', '=', messageId)
+    .select('room_id')
+    .executeTakeFirst();
+    
+  if (!message) return false;
+  
+  // Get the room to find the community
+  const room = await db
+    .selectFrom('chat_rooms')
+    .where('id', '=', message.room_id)
+    .select('community_id')
+    .executeTakeFirst();
+    
+  if (!room) return false;
+  
+  // Check if user is a community moderator
+  const isModerator = await isCommunityModerator(userId, room.community_id);
+  return isModerator;
+}
+
+/**
+ * Check if a user can create a chat room in a community
+ * - Only community moderators, admins, and system admins can create chat rooms
+ */
+export async function canCreateChatRoom(userId: string, communityId: string): Promise<boolean> {
+  // Check if the user is a moderator or admin of the community
+  return isCommunityModerator(userId, communityId);
+}
+
+/**
+ * Check if a user can update a chat room's details
+ * - Only community moderators, admins, and system admins can update chat rooms
+ */
+export async function canUpdateChatRoom(userId: string, roomId: string): Promise<boolean> {
+  // Check if user is a system admin
+  const isAdmin = await isSystemAdmin(userId);
+  if (isAdmin) return true;
+  
+  // Get the room details to check community permissions
+  const room = await db
+    .selectFrom('chat_rooms')
+    .where('id', '=', roomId)
+    .select('community_id')
+    .executeTakeFirst();
+    
+  if (!room) return false;
+  
+  // Check if user is a community moderator
+  return isCommunityModerator(userId, room.community_id);
+}
+
+/**
+ * Check if a user can delete a chat room
+ * - Only community admins and system admins can delete chat rooms
+ * - Moderators cannot delete chat rooms
+ */
+export async function canDeleteChatRoom(userId: string, roomId: string): Promise<boolean> {
+  // Check if user is a system admin
+  const isAdmin = await isSystemAdmin(userId);
+  if (isAdmin) return true;
+  
+  // Get the room details to check community permissions
+  const room = await db
+    .selectFrom('chat_rooms')
+    .where('id', '=', roomId)
+    .select('community_id')
+    .executeTakeFirst();
+    
+  if (!room) return false;
+  
+  // Check if user is specifically a community admin (not just a moderator)
+  const member = await db
+    .selectFrom('members')
+    .where('user_Id', '=', userId)
+    .where('communityId', '=', room.community_id)
+    .where('role', '=', 'admin')
+    .select('id')
+    .executeTakeFirst();
+    
+  return !!member;
+}
+
+/**
+ * Get all chat room permissions for a user in a specific community
+ */
+export async function getChatRoomPermissions(userId: string, communityId: string) {
+  const canCreate = await canCreateChatRoom(userId, communityId);
+  return {
+    canCreate
+  };
+}
+
+/**
+ * Get permissions for a specific chat room
+ */
+export async function getSpecificChatRoomPermissions(userId: string, roomId: string) {
+  const [canUpdate, canDelete] = await Promise.all([
+    canUpdateChatRoom(userId, roomId),
+    canDeleteChatRoom(userId, roomId)
+  ]);
+  
+  return {
+    canUpdate,
+    canDelete
+  };
+}
+
+/**
+ * Get all chat permissions for a user in a specific community
+ */
+export async function getChatPermissions(userId: string, communityId: string) {
+  const [canCreate, canRead] = await Promise.all([
+    canCreateChatMessage(userId, communityId),
+    canReadChatMessages(userId, communityId)
+  ]);
+  
+  return {
+    canCreate,
+    canRead
+  };
+}

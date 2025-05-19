@@ -53,12 +53,10 @@ const CommunityCard : React.FC<CommunityProps> =async ({description,id,memberCou
                     </div>
                     <p className="text-muted-foreground mb-4 line-clamp-2">{description}</p>
                     <div className="flex items-center justify-end">
-                        {
-                          isMember ? 
-                          <Button variant="outline">Joined</Button>
-                          : 
+                
+                          
                           <CommunityJoin communityId={id} />
-                        }
+                        
                     </div>
                   </div>
                 </CardContent>

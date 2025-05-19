@@ -21,7 +21,10 @@ interface Database {
   post_likes : PostLikesTable;
   comments : CommentsTable;
   comments_likes : CommentLikesTable;
-  followers: FollowersTable; // Add this line
+  followers: FollowersTable;
+  chat_rooms: ChatRoomsTable;
+  chat_messages: ChatMessagesTable;
+  chat_room_members: ChatRoomMembersTable; // Add chat room members table
 }
 
 interface UsersTable extends BaseEntity {
@@ -185,6 +188,36 @@ export interface FollowersTable {
 }
 
 
+
+
+// Add the new ChatRoomsTable interface
+export interface ChatRoomsTable {
+  id: Generated<string>;
+  name: string;
+  description: string | null;
+  image: string | null;
+  type: 'public' | 'private' | 'direct';
+  community_id: string;
+  created_by: string;
+  created_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, never>;
+}
+
+// Add the new ChatMessagesTable interface
+export interface ChatMessagesTable {
+  id: Generated<string>;
+  content: string;
+  attachments: any | null;
+  type: string;
+  room_id: string;
+  user_id: string;
+  reply_to: string | null;
+  is_edited: boolean;
+  is_deleted: boolean;
+  created_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, never>;
+}
+
 export type User = Selectable<UsersTable>;
 export type UserUpdate = Updateable<UsersTable>;
 
@@ -235,6 +268,31 @@ export type Follower = Selectable<FollowersTable>;
 export type NewFollower = Insertable<FollowersTable>;
 export type FollowerUpdate = Updateable<FollowersTable>;
 
+
+// Add types for ChatRooms
+export type ChatRoom = Selectable<ChatRoomsTable>;
+export type NewChatRoom = Insertable<ChatRoomsTable>;
+export type ChatRoomUpdate = Updateable<ChatRoomsTable>;
+
+// Add types for ChatMessages
+export type ChatMessage = Selectable<ChatMessagesTable>;
+export type NewChatMessage = Insertable<ChatMessagesTable>;
+export type ChatMessageUpdate = Updateable<ChatMessagesTable>;
+
+// Add the new ChatRoomMembersTable interface
+export interface ChatRoomMembersTable {
+  id: Generated<string>;
+  room_id: string;
+  user_id: string;
+  role: string;
+  is_muted: boolean;
+  joined_at: ColumnType<Date, string | undefined, never>;
+  last_read_at: ColumnType<Date, string | undefined, never>;
+}
+
+export type ChatRoomMember = Selectable<ChatRoomMembersTable>;
+export type NewChatRoomMember = Insertable<ChatRoomMembersTable>;
+export type ChatRoomMemberUpdate = Updateable<ChatRoomMembersTable>;
 
 export type { Database }
 
