@@ -23,7 +23,7 @@ import {
 import useLoginDialogStore from '@/store/useLoginDialog'
 import { ArrowRight, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { signIn } from '@/lib/auth/clinet';
+import { signIn } from '@/lib/auth/client';
 import { toast } from 'sonner';
 import { MdErrorOutline } from "react-icons/md";
 import { CiCircleInfo } from "react-icons/ci";
@@ -56,7 +56,7 @@ const LoginDialog = () => {
   return (
 
        <Dialog open={isOpen}  onOpenChange={closeLogin} >
-      <DialogContent className="bg-transparent border-none shadow-none" hideCloseButton>
+      <DialogContent className="bg-transparent border-none shadow-none" hideCloseButton >
       <div className="flex items-center justify-center">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -132,7 +132,7 @@ const LoginDialog = () => {
                       )}
                     />
             <Button
-                  className="w-full bg-white/10 hover:bg-white/15 !text-white font-medium rounded-xl h-12 transition-all hover:scale-[1.02]"
+                  className="w-full bg-primary/70 hover:bg-primary/60 backdrop:backdrop-blur-sm !text-white font-medium rounded-xl h-12 transition-all hover:scale-[1.02]"
                   variant="ghost"
                   type='submit'
                 >

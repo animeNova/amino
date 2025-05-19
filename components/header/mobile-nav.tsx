@@ -1,33 +1,40 @@
-'use client';
-import React from 'react'
-import { NavLinks } from './links'
-import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
+import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { Menu, MountainIcon } from "lucide-react"
 
-const MobileNav = () => {
-  const path = usePathname()
+export default function Component() {
   return (
-    <div className='md:hidden'>
-  
-    <section className='block border border-t max-h-[70px]  fixed bottom-0 px-3 backdrop-blur-lg py-2 backf bg-background/30 w-full '>
-      <div className='flex items-center justify-between bg mx-3'>
-        {
-            NavLinks.map((link) => {
-                const isActive = path.endsWith(link.href);
-                return (
-                    <button key={link.href} className='flex flex-col justify-center text-sm items-center gap-1'>
-                    <span className={cn('p-2 rounded-full',isActive && 'dark:bg-white bg-black dark:text-black text-white ')}>    
-                        <link.icon className='!w-5 !h-5' />         
-                    </span>
-                        {link.name}
-                    </button>
-                )
-            })
-        }
-      </div>
-    </section>
-    </div>
+    <header className="flex h-20 w-full shrink-0 items-center ">
+      <Sheet>
+        <SheetTrigger asChild>
+          <Button variant="outline" size="icon" className="lg:hidden">
+            <Menu />
+            <span className="sr-only">Toggle navigation menu</span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left">
+          <Link href="#" className="mr-6 hidden lg:flex" prefetch={false}>
+            <MountainIcon className="h-6 w-6" />
+            <span className="sr-only">Acme Inc</span>
+          </Link>
+          <div className="grid gap-2 py-6">
+            <Link href="#" className="flex w-full items-center py-2 text-lg font-semibold" prefetch={false}>
+              Home
+            </Link>
+            <Link href="#" className="flex w-full items-center py-2 text-lg font-semibold" prefetch={false}>
+              About
+            </Link>
+            <Link href="#" className="flex w-full items-center py-2 text-lg font-semibold" prefetch={false}>
+              Services
+            </Link>
+            <Link href="#" className="flex w-full items-center py-2 text-lg font-semibold" prefetch={false}>
+              Contact
+            </Link>
+          </div>
+        </SheetContent>
+      </Sheet>
+    </header>
   )
 }
 
-export default MobileNav

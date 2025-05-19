@@ -2,6 +2,8 @@ import { db } from "@/db"
 import { betterAuth } from "better-auth"
 import { magicLink } from "better-auth/plugins";
 import { sendEmail } from "./mail/email";
+import { admin } from "better-auth/plugins"
+
 export const auth = betterAuth({
     database: {
       db: db,
@@ -33,6 +35,11 @@ export const auth = betterAuth({
               subject : "Verify Your Email" ,
             })
         }
-    })
-    ]
+    }) ,
+    admin({
+      adminRole : ['admin' , 'owner'],
+      defaultRole : 'user'
+    }) 
+
+  ]
 })

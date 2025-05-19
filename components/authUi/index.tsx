@@ -1,21 +1,20 @@
-"use client";
-import { useSession } from '@/lib/auth/clinet';
+import { useSession } from '@/lib/auth/client';
 import React from 'react'
 import UserButton from './UserButton';
 import AuthButtons from './AuthButton';
+import { auth } from '@/lib/auth';
+import { headers } from 'next/headers';
 
-const index = () => {
-    const {data,isPending} = useSession()
-
-    if(isPending){
-        return "Loading"
-    }
+const index =async () => {
+    const session = await auth.api.getSession({
+      headers: await headers()
+  })
   return (
     <div>
       <div>
         {
-          data?.user ? (
-            <UserButton id={data.user.id} name={data.user.name} image={data.user.image} /> 
+          session?.user ? (
+            <UserButton id={session.user.id} name={session.user.name} image={session.user.image} role={session.user.role} /> 
           ) : 
           (
               <AuthButtons />

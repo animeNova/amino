@@ -9,15 +9,16 @@ interface SendEmailProps {
     html : string;
 }
 
-export const sendEmail = async ({html,subject,to} : SendEmailProps) => {
+export const sendEmail = async ({html, subject, to}: SendEmailProps) => {
     try {
        const {data} = await resend.emails.send({
-            from : 'no-replay@amino-clone.com' ,
-            subject ,
-            html ,
+            from: 'no-reply@amino-clone.com',  // Fixed typo in "no-reply"
+            subject,
+            html,
             to
-        })
-        console.log(data);
+        });
+        
+        return { success: true, data };
         
     } catch (error) {
         return { success: false, error };
