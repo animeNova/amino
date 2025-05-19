@@ -5,7 +5,7 @@ import React from 'react';
 
 // Configure Ably immediately when this module is imported
 configureAbly({
-  authUrl: '/api/ably-token',
+  authUrl: 'api/ably-token',
   authMethod: 'POST',
 });
 

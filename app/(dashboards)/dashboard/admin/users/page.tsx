@@ -4,25 +4,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DataTable } from "@/components/data-table"
 import { columns } from "./components/columns"
 import SearchComponent from "../../../../../components/search"
-import Link from "next/link"
 import PaginationButtons from "@/components/ui/pagination-buttons"
 import { getUsers } from "@/app/actions/users/get"
 
-interface SearchParams {
-  search?: string;
-  page ?: number;
+interface PageProps {
+  searchParams: Promise<{
+    search: string;
+    page: string;
+  }>;
 }
 export default async function UsersPage({
   searchParams,
 }: {
-  searchParams: SearchParams;
+  searchParams: PageProps;
 }) {
-  const SearchParams = await searchParams;
-  const page = SearchParams.page ?? 1;
-  const search = SearchParams.search ?? "";
+  const { page,search } = await searchParams.searchParams;
+  const pageParam = page ? parseInt(page) : 1;
+  const searchParam = search ?? "";
   const {users,totalPages,totalCount} =await getUsers({
-    search : search,
-    offset : page,
+    search : searchParam,
+    offset : pageParam,
   });
   return (
 
@@ -104,7 +105,7 @@ export default async function UsersPage({
               </Card>
             </div>
           </div>
-          <PaginationButtons currentPage={page ?? 0} totalPages={totalPages} />
+          <PaginationButtons currentPage={pageParam ?? 0} totalPages={totalPages} />
 
         </div>
   )

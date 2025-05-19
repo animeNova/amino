@@ -1,10 +1,8 @@
 'use server';
 
 import { db } from "@/db";
-import { auth } from "@/lib/auth";
 import { postSchema } from "@/schemas/schema";
 import { canCreatePost } from "@/utils/permissions";
-import { headers } from "next/headers";
 import { z } from "zod";
 import { getUserId } from "../helpers/get-userId";
 import { revalidatePath } from "next/cache";

@@ -8,21 +8,22 @@ import { getGenres } from "@/app/actions/genre/get"
 import SearchComponent from "../../../../../components/search"
 import PaginationButtons from "@/components/ui/pagination-buttons"
 import Link from "next/link"
-interface SearchParams {
-  search?: string;
-  page ?: number;
+interface PageProps {
+  searchParams: Promise<{
+    search: string;
+    page: string;
+  }>;
 }
 export default async function GenresPage({
   searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
-  const SearchParams = await searchParams;
-  const page = SearchParams.page ?? 1;
-  const search = SearchParams.search ?? "";
+}: PageProps
+) {
+  const { page,search } = await searchParams;
+  const pageParam = page ? parseInt(page) : 1;
+  const searchParam = search ?? "";
   const {genres,totalCount,totalPages} = await getGenres({
-    search: search,
-    offset: page
+    search: searchParam,
+    offset: pageParam
   })
   
   return (
@@ -88,7 +89,7 @@ export default async function GenresPage({
               </Card>
             </div>
           </div>
-          <PaginationButtons currentPage={page ?? 0} totalPages={totalPages} />
+          <PaginationButtons currentPage={pageParam ?? 0} totalPages={totalPages} />
         </div>
   )
 }

@@ -3,16 +3,16 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DataTable } from "@/components/data-table"
 import { columns } from "./components/columns"
-import { getCommunitys } from "@/app/actions/community/get"
 import SearchComponent from "@/components/search"
 import Link from "next/link"
 import PaginationButtons from "@/components/ui/pagination-buttons"
-import { getCommunityMembers } from "@/app/actions/members/get"
 import { getJoinRequests } from "@/app/actions/join-requests/get"
 
-interface SearchParams {
-  search?: string;
-  page?: number;
+interface PageProps {
+  searchParams: Promise<{
+    search: string;
+    page: string;
+  }>;
 }
 
 interface PageParams {
@@ -23,16 +23,16 @@ export default async function JoinRequestsPage({
   searchParams,
   params
 }: {
-  searchParams: SearchParams;
+  searchParams: PageProps;
   params: PageParams;
 }) {
-  const SearchParams = await searchParams;
   const { id } = await params;
-  const page = SearchParams.page ?? 1;
-  const search = SearchParams.search ?? "";
+  const { page,search } = await searchParams.searchParams;
+  const pageParam = page ? parseInt(page) : 1;
+  const searchParam = search ?? "";
   const {join_requests,totalPages,totalCount} =await getJoinRequests(id,{
-    offset : page,
-    search : search
+    offset : pageParam,
+    search : searchParam
   }
   )
   return (
@@ -127,7 +127,7 @@ export default async function JoinRequestsPage({
               </Card>
             </div>
           </div>
-          <PaginationButtons currentPage={page ?? 0} totalPages={totalPages} />
+          <PaginationButtons currentPage={pageParam ?? 0} totalPages={totalPages} />
 
         </div>
   )

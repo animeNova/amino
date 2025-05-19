@@ -1,7 +1,3 @@
-import Header from "@/components/header/header";
-import { ThemeProvider } from "@/components/theme/theme-provider"
-import LoginDialog from "@/components/dialogs/auth/login-dialog";
-import { Toaster } from "@/components/ui/sonner"
 import { redirect } from "next/navigation";
 import { isUserNew } from "../actions/users/get";
 
