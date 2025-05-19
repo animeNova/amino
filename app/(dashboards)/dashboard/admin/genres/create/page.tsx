@@ -8,6 +8,8 @@ import { CreateGenreAction } from "@/app/actions/genre/create";
 import { useTransition, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
+export const dynamic = 'force-dynamic';
+
 export default function CreateGenrePage() {
   const router = useRouter()
   const [isPending, startTransition] = useTransition();

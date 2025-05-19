@@ -9,9 +9,11 @@ import Link from "next/link"
 import PaginationButtons from "@/components/ui/pagination-buttons"
 import { getCommunityMembers } from "@/app/actions/members/get"
 
-interface SearchParams {
-  search?: string;
-  page?: number;
+interface SearchParamsProps {
+  searchParams: Promise<{
+    search: string;
+    page: string;
+  }>;
 }
 
 interface PageParams {
@@ -22,16 +24,16 @@ export default async function MembersPage({
   searchParams,
   params
 }: {
-  searchParams: SearchParams;
+  searchParams: SearchParamsProps;
   params: PageParams;
 }) {
-  const SearchParams = await searchParams;
   const { id } = await params;
-  const page = SearchParams.page ?? 1;
-  const search = SearchParams.search ?? "";
+  const { page,search } = await searchParams.searchParams;
+  const pageParam = page ? parseInt(page) : 1;
+  const searchParam = search ?? "";
   const {members,totalPages,totalCount} =await getCommunityMembers(id, {
-    offset : page ,
-    search : search
+    offset : pageParam ,
+    search : searchParam
   })
 
   return (
@@ -126,7 +128,7 @@ export default async function MembersPage({
               </Card>
             </div>
           </div>
-          <PaginationButtons currentPage={page ?? 0} totalPages={totalPages} />
+          <PaginationButtons currentPage={pageParam ?? 0} totalPages={totalPages} />
 
         </div>
   )

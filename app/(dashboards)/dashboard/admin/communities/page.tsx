@@ -1,4 +1,4 @@
-import {  Globe, Plus,Settings } from "lucide-react"
+import {  Globe, Plus, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DataTable } from "@/components/data-table"
@@ -8,22 +8,26 @@ import SearchComponent from "@/components/search"
 import Link from "next/link"
 import PaginationButtons from "@/components/ui/pagination-buttons"
 
-interface SearchParams {
-  search?: string;
-  page ?: number;
+// Update the interface to match Next.js expectations
+interface PageProps {
+  searchParams: Promise<{
+    search: string;
+    page: string;
+  }>;
 }
+
 export default async function CommunitiesPage({
   searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
-  const SearchParams = await searchParams;
-  const page = SearchParams.page ?? 1;
-  const search = SearchParams.search ?? "";
-  const {communities,totalPages,totalCount} =await getCommunitys({
-    offset : page ,
-    search : search ,
+}: PageProps) {
+  const { page,search } = await searchParams;
+  const pageParam = page ? parseInt(page) : 1;
+  const searchParam = search ?? "";
+  
+  const {communities, totalPages, totalCount} = await getCommunitys({
+    offset: pageParam,
+    search: searchParam,
   });
+  
   return (
 
 
@@ -112,7 +116,7 @@ export default async function CommunitiesPage({
               </Card>
             </div>
           </div>
-          <PaginationButtons currentPage={page ?? 1} totalPages={totalPages} />
+          <PaginationButtons currentPage={pageParam ?? 1} totalPages={totalPages} />
 
         </div>
   )
