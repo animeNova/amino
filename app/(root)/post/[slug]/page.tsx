@@ -16,6 +16,8 @@ import LikeButton from '@/components/posts/like';
 import { notFound } from 'next/navigation';
 import { formatDistanceToNow } from "date-fns"
 import FollowButton from '@/components/ui/followButton';
+import { BookmarkButton } from '@/components/posts/bookmarkBtn';
+import BackToFeedBtn from './back-to-feed';
 
 interface AnimePostProps {
   params : {
@@ -76,19 +78,13 @@ export default async function PostPage({params} : AnimePostProps) {
       {/* Navigation Bar */}
       <nav className="sticky top-12 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 max-w-screen-2xl items-center">
-          <Button variant="ghost" size="sm" className="mr-auto">
-            <ChevronLeft className="mr-2 h-4 w-4" />
-            Back to Feed
-          </Button>
+          <BackToFeedBtn />
           <div className="flex items-center gap-2">
             <ShareDialog
                 postTitle="The Evolution of Anime: From Astro Boy to Modern Masterpieces"
                 postUrl={postUrl}
               />
-            <Button variant="ghost" size="sm">
-              <Bookmark className="mr-2 h-4 w-4" />
-              Save
-            </Button>
+            <BookmarkButton postId={post.post_id} />
           </div>
         </div>
       </nav>
@@ -121,9 +117,9 @@ export default async function PostPage({params} : AnimePostProps) {
                   <UserAvatar url={post.user_image} className="w-full h-full" />
                   <AvatarFallback>AS</AvatarFallback>
                 </Avatar>
-                <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs px-1 rounded-md font-medium">
+                {/* <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs px-1 rounded-md font-medium">
                   Lv.85
-                </div>
+                </div> */}
               </div>
               <div>
                 <div className="flex items-center gap-1">
@@ -150,7 +146,7 @@ export default async function PostPage({params} : AnimePostProps) {
             <LikeButton postId={post.post_id} isLiked={post.isLiked != null} likes={post.likeCount!}  />
             <Button variant="ghost" size="sm" className="gap-2">
               <MessageCircle className="h-5 w-5" />
-              <span>234 Comments</span>
+              <span>{post.commentCount} Comments</span>
             </Button>
             <ShareDialog
                 postTitle="The Evolution of Anime: From Astro Boy to Modern Masterpieces"

@@ -10,16 +10,16 @@ import PaginationButtons from "@/components/ui/pagination-buttons"
 
 // Update the interface to match Next.js expectations
 interface PageProps {
-  searchParams: Promise<{
+  searchParams: {
     search: string;
     page: string;
-  }>;
+  };
 }
 
 export default async function CommunitiesPage({
   searchParams,
 }: PageProps) {
-  const { page,search } = await searchParams;
+  const { page,search } =await searchParams;
   const pageParam = page ? parseInt(page) : 1;
   const searchParam = search ?? "";
   

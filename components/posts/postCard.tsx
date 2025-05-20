@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { MessageCircle, Share2, Bookmark, MoreHorizontal, Sparkles, Eye, Delete } from "lucide-react"
+import { MessageCircle, Share2, Bookmark, MoreHorizontal, Sparkles, Eye, Delete, Edit, Trash } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import Image from "next/image"
@@ -20,6 +20,7 @@ import { DeleteConfirmationModal } from "../delete-confirmation-modal"
 import { deletePost } from "@/app/actions/posts/delete" // Add this import
 import { useRouter } from "next/navigation" // Add this import
 import { toast } from "@/hooks/use-toast"
+import { BookmarkButton } from "./bookmarkBtn"
 
 interface AnimePostCardProps {
   author: {
@@ -119,7 +120,7 @@ export default function AnimePostCard({
   };
 
   return (
-    <>
+    <div className="pt-3">
     <Card
       className="w-[380px] md:w-[400px] mx-auto border-2 bg-background hover:shadow-xl transition-all duration-300 flex justify-between flex-col overflow-hidden"
       style={{
@@ -144,10 +145,10 @@ export default function AnimePostCard({
                 <AvatarFallback className="bg-primary/10">{author.name.charAt(0)}</AvatarFallback>
               </Avatar>
             
-                <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-md font-medium shadow-sm">
+                {/* <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-xs px-1.5 py-0.5 rounded-md font-medium shadow-sm">
                   Lv.5
                 </div>
-             
+              */}
             </div>
             <div>
               <Link href={`/profile/${author.id}`}>
@@ -157,12 +158,6 @@ export default function AnimePostCard({
                 {author.name.includes('@') 
                   ? author.name.split('@')[0] 
                   : author.name}
-                {author.name.length > 15 && 
-                  <span className="inline-block" title={author.name}>
-                    <MoreHorizontal className="h-3 w-3" />
-                  </span>
-                }
-                <Sparkles className="h-4 w-4 text-yellow-500" />
               </div>
               </Link>
             
@@ -170,37 +165,32 @@ export default function AnimePostCard({
             </div>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full hover:bg-muted">
-                <MoreHorizontal className="h-5 w-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem>Follow {author.name}</DropdownMenuItem>
-              <DropdownMenuItem>Mute posts</DropdownMenuItem>
-              {canEditPermission && ( // Added conditional Edit
-                <DropdownMenuItem onClick={() => setIsOpen(true)}>
-                  Edit Post
-                </DropdownMenuItem>
+            <div>
+                  {canEditPermission && ( // Added conditional Edit
+                <Button onClick={() => setIsOpen(true)} variant={'ghost'}>
+                 <Edit />
+                </Button>
               )}
               {canDeletePermission && ( // Added conditional Delete
-                <DropdownMenuItem 
+                <Button 
                   className="text-red-600"
                   onClick={() => setIsDeleteModalOpen(true)} // Update this to open delete modal
+                  variant={'ghost'}
                 >
-                  Delete Post
-                </DropdownMenuItem>
+                 <Trash />
+                </Button>
               )}
-              <DropdownMenuItem>Report</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          </div>
+      
         </div>
 
         <div>
+          <Link href={`/post/${post.id}`}>
           <h2 className="text-xl font-bold leading-tight mb-3 text-primary hover:text-primary/90 transition-colors cursor-pointer">
             {post.title}
           </h2>
+          </Link>
+ 
 
           <div className="flex flex-wrap gap-2 mb-3">
             {genres.map((genre, index) => (
@@ -259,31 +249,9 @@ export default function AnimePostCard({
             <span className="font-medium text-muted-foreground">{stats.comments}</span>
           </Button>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className="flex items-center gap-1.5 hover:bg-green-50 dark:hover:bg-green-950/20"
-          >
-            <Share2 className="h-5 w-5 text-muted-foreground" />
-            <span className="font-medium text-muted-foreground">{stats.shares}</span>
-          </Button>
         </div>
+            <BookmarkButton postId={post.id} />
 
-        <motion.div whileTap={{ scale: 0.9 }}>
-          <Button
-            variant="ghost"
-            size="sm"
-            className={cn("px-2 transition-colors", bookmarked ? "bg-primary/10 hover:bg-primary/20" : "")}
-            onClick={handleBookmark}
-          >
-            <Bookmark
-              className={cn(
-                "h-5 w-5 transition-colors",
-                bookmarked ? "fill-primary text-primary" : "text-muted-foreground",
-              )}
-            />
-          </Button>
-        </motion.div>
       </CardFooter>
     </Card>
     
@@ -307,7 +275,7 @@ export default function AnimePostCard({
       itemName={post.title}
       itemType="post"
     />
-    </>
+    </div>
   )
 }
 

@@ -5,9 +5,12 @@ import React from 'react';
 
 // Configure Ably immediately when this module is imported
 configureAbly({
-  authUrl: 'api/ably-token',
+  authUrl: process.env.NODE_ENV == 'production' 
+    ? `https://amino-clone.com/api/ably-token` 
+    : `http://localhost:3000/api/ably-token`,
   authMethod: 'POST',
 });
+
 
 // Custom provider component for wrapping your application
 export function AblyClientProvider({ children }: { children: React.ReactNode }) {

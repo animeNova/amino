@@ -84,9 +84,9 @@ const CommentItem: React.FC<CommentItemProps> = ({ comment, onReplySubmit }) => 
             <UserAvatar url={comment.userImage} className="w-full h-full" />
             <AvatarFallback>{comment.userName[0]}</AvatarFallback>
           </Avatar>
-          <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-[10px] px-1 rounded-md font-medium">
+          {/* <div className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground text-[10px] px-1 rounded-md font-medium">
             Lv.54
-          </div>
+          </div> */}
         </div>
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-2">

@@ -30,15 +30,5 @@ export const AdminSideBarLinks = [
         title : "Genres",
         href : "/dashboard/admin/genres",
         icon : <TagsIcon className="h-4 w-4" />,
-    },
-    {
-        title : 'Reports',
-        href : '/dashboard/admin/reports',
-        icon : <Flag className="h-4 w-4" />
-    },
-    {
-        title : 'Settings' ,
-        href : '/dashboard/admin/settings',
-        icon : <Flag className="h-4 w-4" />
     }
 ]

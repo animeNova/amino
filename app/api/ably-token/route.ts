@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Create a unique clientId based on the user's ID
-    const clientId = session.user.id;
+    const clientId = session?.user.id;
     
     // Initialize the Ably SDK with your API key
     const client = new Ably.Rest(process.env.ABLY_API_KEY!);

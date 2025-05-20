@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Image from 'next/image';
-import { LogOutIcon, Settings, User, Users } from 'lucide-react';
+import { BookMarked, LogOutIcon, Settings, User, Users } from 'lucide-react';
 import { LuLayoutDashboard } from "react-icons/lu";
 
 import { signOut } from '@/lib/auth/client';
@@ -57,6 +57,10 @@ const UserButton: React.FC<UserButtonProps> = ({
         }
 
     
+        <DropdownMenuItem onClick={() => router.push('/bookmarks')}>
+          <BookMarked className='hover:rotate-[30deg] transition-transform mr-2 h-4 w-4'  />
+          <span>bookmarks</span>
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setSettingsDialogOpen(true)}>
           <Settings className='hover:rotate-[30deg] transition-transform mr-2 h-4 w-4' />
           <span>Setting</span>

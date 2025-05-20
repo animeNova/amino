@@ -9,16 +9,16 @@ import SearchComponent from "../../../../../components/search"
 import PaginationButtons from "@/components/ui/pagination-buttons"
 import Link from "next/link"
 interface PageProps {
-  searchParams: Promise<{
+  searchParams: {
     search: string;
     page: string;
-  }>;
+  };
 }
 export default async function GenresPage({
   searchParams,
 }: PageProps
 ) {
-  const { page,search } = await searchParams;
+  const { page,search } =await searchParams;
   const pageParam = page ? parseInt(page) : 1;
   const searchParam = search ?? "";
   const {genres,totalCount,totalPages} = await getGenres({

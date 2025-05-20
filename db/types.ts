@@ -24,7 +24,8 @@ interface Database {
   followers: FollowersTable;
   chat_rooms: ChatRoomsTable;
   chat_messages: ChatMessagesTable;
-  chat_room_members: ChatRoomMembersTable; // Add chat room members table
+  chat_room_members: ChatRoomMembersTable;
+  bookmarks: BookmarksTable; // Add bookmarks table
 }
 
 interface UsersTable extends BaseEntity {
@@ -218,6 +219,14 @@ export interface ChatMessagesTable {
   updated_at: ColumnType<Date, string | undefined, never>;
 }
 
+export interface BookmarksTable {
+  id: Generated<string>;
+  user_id: string;
+  post_id: string;
+  created_at: ColumnType<Date, string | undefined, never>;
+
+}
+
 export type User = Selectable<UsersTable>;
 export type UserUpdate = Updateable<UsersTable>;
 
@@ -293,6 +302,12 @@ export interface ChatRoomMembersTable {
 export type ChatRoomMember = Selectable<ChatRoomMembersTable>;
 export type NewChatRoomMember = Insertable<ChatRoomMembersTable>;
 export type ChatRoomMemberUpdate = Updateable<ChatRoomMembersTable>;
+
+// Add the BookmarksTable interface
+
+export type Bookmark = Selectable<BookmarksTable>;
+export type NewBookmark = Insertable<BookmarksTable>;
+export type BookmarkUpdate = Updateable<BookmarksTable>;
 
 export type { Database }
 
