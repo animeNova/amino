@@ -32,7 +32,7 @@ export default async function CommunityPage({community} :Readonly<CommunityPageP
      <div className="relative h-48 w-full">
         <Image src={community.banner} alt="Community cover" fill className="object-cover" />
       </div>
-      <div className="container relative grid grid-cols-1 gap-6 pb-8 pt-5 md:grid-cols-12">
+      <div className="container  relative grid grid-cols-1 gap-6 pb-8 pt-5 md:grid-cols-12">
         {/* Left Sidebar - Community Info */}
         <div className="md:col-span-3 space-y-6">
           <CommunityInfo community={{
@@ -51,20 +51,8 @@ export default async function CommunityPage({community} :Readonly<CommunityPageP
         </div>
 
         {/* Middle Section - Posts */}
-        <div className="md:col-span-6 space-y-6">
-          <Card>
-            <CardContent className="p-4">
-              <Tabs defaultValue="posts" className="w-full">
-                <TabsList className="w-full justify-start">
-                  <TabsTrigger value="posts">Posts</TabsTrigger>
-                  <TabsTrigger value="media">Media</TabsTrigger>
-                  <TabsTrigger value="events">Events</TabsTrigger>
-                  <TabsTrigger value="about">About</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </CardContent>
-          </Card>
-        <ScrollArea className="h-[calc(100vh-5rem)]">
+        <div className="md:col-span-6 space-y-6 ">
+        <ScrollArea className="h-[calc(100vh-5rem)] pt-3">
           <PostList posts={posts} className="grid grid-cols-1 gap-4 w-full" />
         </ScrollArea>
         </div>

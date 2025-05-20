@@ -1,44 +1,37 @@
-import {  Globe, Plus,Settings } from "lucide-react"
+import {  Globe, Plus, Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { DataTable } from "@/components/data-table"
 import { columns } from "./components/columns"
-import { getCommunitys } from "@/app/actions/community/get"
 import SearchComponent from "@/components/search"
 import Link from "next/link"
 import PaginationButtons from "@/components/ui/pagination-buttons"
 import { getCommunityMembers } from "@/app/actions/members/get"
 
-interface SearchParamsProps {
-  searchParams: Promise<{
-    search: string;
-    page: string;
-  }>;
-}
-
-interface PageParams {
-  id: string;
+interface PageProps {
+  params: {
+    id: string;
+  };
+  searchParams: {
+    search?: string;
+    page?: string;
+  };
 }
 
 export default async function MembersPage({
   searchParams,
   params
-}: {
-  searchParams: SearchParamsProps;
-  params: PageParams;
-}) {
-  const { id } = await params;
-  const { page,search } = await searchParams.searchParams;
+}: PageProps) {
+  const { id } = params;
+  const { page, search } = searchParams;
   const pageParam = page ? parseInt(page) : 1;
   const searchParam = search ?? "";
-  const {members,totalPages,totalCount} =await getCommunityMembers(id, {
-    offset : pageParam ,
-    search : searchParam
-  })
+  const {members, totalPages, totalCount} = await getCommunityMembers(id, {
+    offset: pageParam,
+    search: searchParam
+  });
 
   return (
-
-
         <div className="flex-1">
           <div className="border-b">
             <div className="flex h-16 items-center px-4">

@@ -15,8 +15,6 @@ import { RecentUsersTable } from "./components/admin/recent-users-table"
 
 
 export default function AdminDashboard() {
-
-
   return (
           <>
           <div className="border-b">

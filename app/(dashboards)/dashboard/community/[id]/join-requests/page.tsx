@@ -7,27 +7,22 @@ import SearchComponent from "@/components/search"
 import Link from "next/link"
 import PaginationButtons from "@/components/ui/pagination-buttons"
 import { getJoinRequests } from "@/app/actions/join-requests/get"
-
 interface PageProps {
-  searchParams: Promise<{
-    search: string;
-    page: string;
-  }>;
-}
-
-interface PageParams {
-  id: string;
+  params: {
+    id: string;
+  };
+  searchParams: {
+    search?: string;
+    page?: string;
+  };
 }
 
 export default async function JoinRequestsPage({
   searchParams,
   params
-}: {
-  searchParams: PageProps;
-  params: PageParams;
-}) {
+}: PageProps) {
   const { id } = await params;
-  const { page,search } = await searchParams.searchParams;
+  const { page,search } = await searchParams;
   const pageParam = page ? parseInt(page) : 1;
   const searchParam = search ?? "";
   const {join_requests,totalPages,totalCount} =await getJoinRequests(id,{

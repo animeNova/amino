@@ -8,17 +8,16 @@ import PaginationButtons from "@/components/ui/pagination-buttons"
 import { getUsers } from "@/app/actions/users/get"
 
 interface PageProps {
-  searchParams: Promise<{
+  searchParams: {
     search: string;
     page: string;
-  }>;
+  };
 }
 export default async function UsersPage({
   searchParams,
-}: {
-  searchParams: PageProps;
-}) {
-  const { page,search } = await searchParams.searchParams;
+}: PageProps
+) {
+  const { page,search } =await searchParams;
   const pageParam = page ? parseInt(page) : 1;
   const searchParam = search ?? "";
   const {users,totalPages,totalCount} =await getUsers({

@@ -5,7 +5,6 @@ import { PostFormInput, postSchema } from '@/schemas/schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React, { useState } from 'react'
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import { Input } from '../ui/input';
 import { Badge, Plus, Save, Send, Upload, X } from 'lucide-react';
@@ -138,7 +137,7 @@ const PostForm : React.FC<CreatePostFormProps> = ({
         name="image"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Community Image</FormLabel>
+            <FormLabel>Post Image</FormLabel>
             <FormControl>
               <div className="space-y-4">
                 <div className="flex items-center gap-4">

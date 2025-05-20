@@ -71,7 +71,7 @@ export default async function ExplorePage({
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold">Communities</h1>
               <p className="hidden text-sm text-muted-foreground md:block">
-                Showing <span className="font-medium">{communities.length}</span> communities
+                Showing <span className="font-medium">{communities.length}</span> communities of {totalCount}
               </p>
             </div>
 
