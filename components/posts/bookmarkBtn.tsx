@@ -7,8 +7,11 @@ import { Bookmark } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
+import { useSession } from "@/lib/auth/client";
+import { toast } from "@/hooks/use-toast";
 
 export function BookmarkButton({ postId }: { postId: string }) {
+  const {data} = useSession();
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -25,7 +28,13 @@ export function BookmarkButton({ postId }: { postId: string }) {
   
   const toggleBookmark = async () => {
     setIsLoading(true);
-    
+    if(!data?.user){
+      return toast({
+        variant : 'destructive' ,
+        title : "Error" ,
+        description : 'You must be logged in to bookmark a post'
+      })
+    }
     if (isBookmarked) {
       await removeBookmark(postId);
       setIsBookmarked(false);

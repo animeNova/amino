@@ -74,28 +74,6 @@ export default async function UserProfilePage({ params }: PageProps) {
               Message
             </Button> */}
             <FollowButton profileUserId={user.id}  />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem>
-                  <Bell className="h-4 w-4 mr-2" />
-                  Notification settings
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Share profile
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                {/* <DropdownMenuItem onClick={handleReport} className="text-red-600">
-                  <Flag className="h-4 w-4 mr-2" />
-                  Report user
-                </DropdownMenuItem> */}
-              </DropdownMenuContent>
-            </DropdownMenu>
           </div>
         </div>
 
@@ -134,86 +112,21 @@ export default async function UserProfilePage({ params }: PageProps) {
             </Card>
 
             {/* Tabs for Posts, Media, Likes */}
-            <Tabs defaultValue="posts"  className="w-full">
+            {/* <Tabs defaultValue="posts" >
               <TabsList className="grid grid-cols-4 w-full">
-                <TabsTrigger value="posts">
-                  Posts <span className="ml-1 text-xs text-muted-foreground">({user.postsCount})</span>
-                </TabsTrigger>
+                <TabsTrigger value="posts"> */}
+                <div className="text-center p-2 bg-accent">
+                Posts <span className="ml-1 text-xs text-muted-foreground">({user.postsCount})</span>
+
+                </div>
+                {/* </TabsTrigger> */}
                 {/* <TabsTrigger value="likes">Likes</TabsTrigger>
                 <TabsTrigger value="comments">Comments</TabsTrigger> */}
-              </TabsList>
+              {/* </TabsList> */}
 
               {/* Replace the PostCard usage in the posts TabsContent with AnimePostCard */}
-              <TabsContent value="posts" className="mt-4 space-y-4">
+        
                 <PostList posts={posts} className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full" />
-              </TabsContent>
-
-              {/* Replace the PostCard usage in the likes TabsContent with AnimePostCard */}
-              <TabsContent value="likes" className="mt-4 space-y-4">
-                {/* {likes.map((post) => (
-                  <AnimePostCard
-                    key={post.id}
-                    author={{
-                      name: post.author.name,
-                      avatar: post.author.avatar,
-                      level: 38,
-                    }}
-                    post={{
-                      title: post.content.split("!")[0] + "!",
-                      excerpt: post.content,
-                      images: post.image,
-                      publishDate: post.timestamp,
-                    }}
-                    genres={["Photography", "Macro", "Wildlife"]}
-                    stats={{
-                      likes: post.likes,
-                      comments: post.comments,
-                      shares: post.shares,
-                    }}
-                    isLiked={true}
-                  />
-                ))} */}
-                likes
-              </TabsContent>
-
-              <TabsContent value="comments" className="mt-4 space-y-4">
-                {/* {comments.map((comment) => (
-                  <Card key={comment.id}>
-                    <CardContent className="pt-6">
-                      <div className="flex items-start gap-4">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={user.avatar} alt={user.name} />
-                          <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <span className="font-medium">{user.name}</span>
-                              <span className="text-sm text-muted-foreground ml-2">
-                                commented on {comment.postTitle}
-                              </span>
-                            </div>
-                            <span className="text-xs text-muted-foreground">{comment.time}</span>
-                          </div>
-                          <p className="mt-1">{comment.content}</p>
-                          <div className="flex items-center gap-4 mt-2">
-                            <Button variant="ghost" size="sm" className="h-8 px-2">
-                              <Heart className="h-4 w-4 mr-1" />
-                              <span>{comment.likes}</span>
-                            </Button>
-                            <Button variant="ghost" size="sm" className="h-8 px-2">
-                              <MessageCircle className="h-4 w-4 mr-1" />
-                              <span>Reply</span>
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))} */}
-                comments
-              </TabsContent>
-            </Tabs>
           </div>
 
           {/* Sidebar */}
