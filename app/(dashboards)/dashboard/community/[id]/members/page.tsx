@@ -22,7 +22,7 @@ export default async function MembersPage({
   searchParams,
   params
 }: PageProps) {
-  const { id } = params;
+  const { id } =await params;
   const { page, search } = searchParams;
   const pageParam = page ? parseInt(page) : 1;
   const searchParam = search ?? "";

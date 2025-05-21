@@ -42,7 +42,7 @@ const LoginDialog = () => {
     })
    const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
       const {error} = await signIn.magicLink({
-        email : values.email
+        email : values.email,
       }) 
       if(error){
         return toast(error.message , {

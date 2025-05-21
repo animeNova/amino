@@ -30,10 +30,6 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   
-  // Add this configuration
-  unstable_allowDynamic: [
-    '/app/**/page.tsx', // Allow dynamic rendering for all page components
-  ],
 };
 
 export default nextConfig;
