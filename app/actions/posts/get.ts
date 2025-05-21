@@ -40,8 +40,9 @@ export interface GetPostsResult {
 }
 
 export const getPostsByCommunity = async (communityId : string,options: GetPostsOptions = {}) : Promise<GetPostsResult> => {
+    const page = Math.max(options.offset ?? 1, 1);
     const limit = options.limit ?? 10;
-    const offset = options.offset ?? 0;
+    const offset = (page - 1) * limit;
     const search = options.search ?? null;
     const tag = options.tag ?? null;
     const orderBy = options.orderBy?? 'desc';

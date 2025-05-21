@@ -30,7 +30,7 @@ export const auth = betterAuth({
               `
               <p>Please Verify Your Email</p>
                 <a href=${url}>confirm your email</a>
-               <p>This Cpde <b>expires in 5 minutes</b></p>
+               <p>This Code <b>expires in 5 minutes</b></p>
               ` ,
               subject : "Verify Your Email" ,
             })

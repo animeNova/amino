@@ -17,13 +17,16 @@ import { Button } from "@/components/ui/button"
 import { getCommunitySideBarLinks } from "@/constants/community-dashboard-links"
 import { useParams, usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { useSession } from "@/lib/auth/client"
+import UserAvatar from "@/components/ui/user-avatar"
 
 export function ModeratorSidebar() {
+  const {data} = useSession()
   const path = usePathname()
   const params = useParams()
   const communityId = params.id as string
   const sidebarLinks = getCommunitySideBarLinks
-
+  
   return (
     <Sidebar >
       <SidebarHeader className="border-b px-6 py-3 ">
@@ -51,19 +54,13 @@ export function ModeratorSidebar() {
         }
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="border-t p-4">
-        <div className="flex items-center gap-4">
-          <Avatar>
-            <AvatarImage src="/placeholder.svg?text=SC" />
-            <AvatarFallback>SC</AvatarFallback>
-          </Avatar>
+      <SidebarFooter className="border-t">
+        <div className="flex items-center gap-2">
+          <UserAvatar url={data?.user.image} />
           <div className="flex flex-col">
-            <span className="text-sm font-medium">Sarah Chen</span>
-            <span className="text-xs text-muted-foreground">Admin</span>
+            <span className="text-[.8rem] font-medium">{data?.user.name}</span>
+            <span className="text-xs text-muted-foreground">{data?.user.role}</span>
           </div>
-          <Button variant="ghost" size="icon" className="ml-auto">
-            <Settings className="h-4 w-4" />
-          </Button>
         </div>
       </SidebarFooter>
     </Sidebar>

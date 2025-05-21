@@ -4,20 +4,10 @@ import Link from "next/link"
 import {
   Bell,
   Calendar,
-  Edit,
-  Flag,
-  Heart,
-  ImageIcon,
   LinkIcon,
   MapPin,
-  MessageCircle,
   MoreHorizontal,
   Share2,
-  Shield,
-  Star,
-  User,
-  Users,
-  Settings,
 } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -32,11 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { toast, useToast } from "@/hooks/use-toast"
-
 import Container from "@/components/ui/container"
-
-import AnimePostCard from "@/components/posts/postCard"
 import UserStats from "./components/stats"
 import { getUserById } from "@/app/actions/users/get"
 import UserAvatar from "@/components/ui/user-avatar"
@@ -153,14 +139,13 @@ export default async function UserProfilePage({ params }: PageProps) {
                 <TabsTrigger value="posts">
                   Posts <span className="ml-1 text-xs text-muted-foreground">({user.postsCount})</span>
                 </TabsTrigger>
-                <TabsTrigger value="likes">Likes</TabsTrigger>
-                <TabsTrigger value="comments">Comments</TabsTrigger>
+                {/* <TabsTrigger value="likes">Likes</TabsTrigger>
+                <TabsTrigger value="comments">Comments</TabsTrigger> */}
               </TabsList>
 
               {/* Replace the PostCard usage in the posts TabsContent with AnimePostCard */}
               <TabsContent value="posts" className="mt-4 space-y-4">
                 <PostList posts={posts} className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full" />
-                
               </TabsContent>
 
               {/* Replace the PostCard usage in the likes TabsContent with AnimePostCard */}
