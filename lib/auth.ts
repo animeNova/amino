@@ -41,5 +41,8 @@ export const auth = betterAuth({
       defaultRole : 'user'
     }) 
 
-  ]
+  ],
+  trustedOrigins: [
+    process.env.BETTER_AUTH_PROD_URL as string
+  ],
 })
