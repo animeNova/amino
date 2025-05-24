@@ -45,4 +45,8 @@ export const auth = betterAuth({
   trustedOrigins: [
     process.env.BETTER_AUTH_PROD_URL as string
   ],
+  advanced :{
+    useSecureCookies :process.env.NODE_ENV == 'production' ? true : false,
+    
+} ,
 })
